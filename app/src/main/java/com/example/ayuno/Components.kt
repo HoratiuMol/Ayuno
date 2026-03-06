@@ -21,7 +21,7 @@ import java.util.*
 import kotlin.math.min
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FastingRing  (equivalent to FastingRing.tsx)
+// FastingRing — per-phase ring with countdown/countup
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -39,59 +39,109 @@ fun FastingRingView(
         }
     }
 
-    val elapsedMs  = now - startTime
-    val goalMs     = goalHours * 3_600_000L
-    val progress   = (elapsedMs.toFloat() / goalMs).coerceIn(0f, 1f)
-    val hours      = elapsedMs / 3_600_000
-    val minutes    = (elapsedMs % 3_600_000) / 60_000
+    val elapsedMs    = now - startTime
+    val elapsedHours = elapsedMs / 3_600_000f
 
-    val primary    = MaterialTheme.colorScheme.primary
-    val surface    = MaterialTheme.colorScheme.surfaceVariant
+    // Current and next phase
+    val currentPhase = FASTING_PHASES.lastOrNull { elapsedHours >= it.startHour }
+        ?: FASTING_PHASES.first()
+    val nextPhase    = FASTING_PHASES.firstOrNull { it.startHour > elapsedHours }
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier.size(220.dp)
+    // Phase ring: progress within current phase (0..1)
+    val phaseStartMs = currentPhase.startHour * 3_600_000L
+    val phaseEndMs   = (nextPhase?.startHour ?: (currentPhase.startHour + 4)) * 3_600_000L
+    val phaseDurMs   = phaseEndMs - phaseStartMs
+    val phaseElapsed = elapsedMs - phaseStartMs
+    val phaseProgress = (phaseElapsed.toFloat() / phaseDurMs).coerceIn(0f, 1f)
+
+    // Time remaining until next phase (countdown) or elapsed if last phase
+    val remainingMs  = if (nextPhase != null) phaseEndMs - elapsedMs else elapsedMs
+    val remainingH   = (remainingMs / 3_600_000).coerceAtLeast(0)
+    val remainingMin = ((remainingMs % 3_600_000) / 60_000).coerceAtLeast(0)
+    val remainingSec = ((remainingMs % 60_000) / 1_000).coerceAtLeast(0)
+
+    val isLastPhase  = nextPhase == null
+    val showSeconds  = remainingH == 0L  // show seconds only when < 1h left
+
+    val primary  = MaterialTheme.colorScheme.primary
+    val surface  = MaterialTheme.colorScheme.surfaceVariant
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke    = 20f
-            val diameter  = min(size.width, size.height) - stroke
-            val topLeft   = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
-            val arcSize   = Size(diameter, diameter)
+        // Phase name above the ring
+        Text(
+            text  = currentPhase.name.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-            // Background track
-            drawArc(
-                color     = surface,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter  = false,
-                topLeft    = topLeft,
-                size       = arcSize,
-                style      = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
-            // Progress arc
-            drawArc(
-                color      = primary,
-                startAngle = -90f,
-                sweepAngle = 360f * progress,
-                useCenter  = false,
-                topLeft    = topLeft,
-                size       = arcSize,
-                style      = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(220.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val stroke   = 18f
+                val diameter = min(size.width, size.height) - stroke
+                val topLeft  = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
+                val arcSize  = Size(diameter, diameter)
+
+                // Background track
+                drawArc(
+                    color      = surface,
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter  = false,
+                    topLeft    = topLeft,
+                    size       = arcSize,
+                    style      = Stroke(width = stroke, cap = StrokeCap.Round)
+                )
+                // Phase progress arc
+                drawArc(
+                    color      = primary,
+                    startAngle = -90f,
+                    sweepAngle = 360f * phaseProgress,
+                    useCenter  = false,
+                    topLeft    = topLeft,
+                    size       = arcSize,
+                    style      = Stroke(width = stroke, cap = StrokeCap.Round)
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Main timer
+                Text(
+                    text  = if (showSeconds)
+                        "%02d:%02d".format(remainingMin, remainingSec)
+                    else
+                        "%02d:%02d".format(remainingH, remainingMin),
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                // Seconds row when showing h:min
+                if (!showSeconds && !isLastPhase) {
+                    Text(
+                        text  = ":%02d".format(remainingSec),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                // Label below
+                Text(
+                    text  = if (isLastPhase) "Ayuno completado 🎉"
+                    else "Tu ayuno comienza pronto",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Next phase hint
+        if (nextPhase != null) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text  = "%02d:%02d".format(hours, minutes),
-                style = MaterialTheme.typography.headlineLarge
-            )
-            Text(
-                text  = "/ ${goalHours}h",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text  = "%.0f%%".format(progress * 100),
+                text  = "Siguiente: ${nextPhase.name}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -121,34 +171,18 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(Unit) {
-        while (true) { delay(60_000); now = System.currentTimeMillis() }
+        while (true) { delay(1_000); now = System.currentTimeMillis() }
     }
 
     val elapsedHours = (now - startTime) / 3_600_000f
     val currentPhase = FASTING_PHASES.lastOrNull { elapsedHours >= it.startHour }
         ?: FASTING_PHASES.first()
-    val nextPhase    = FASTING_PHASES.firstOrNull { it.startHour > elapsedHours }
 
     Column(modifier = modifier) {
-        Text(
-            text  = "Fase actual: ${currentPhase.name}",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text  = currentPhase.description,
             style = MaterialTheme.typography.bodyMedium
         )
-        if (nextPhase != null) {
-            val hoursLeft = nextPhase.startHour - elapsedHours
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text  = "Próxima fase (${nextPhase.name}) en %.1fh".format(hoursLeft),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 
