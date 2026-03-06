@@ -23,10 +23,16 @@ class FastingStorage(context: Context) {
         return runCatching { sessionFromJson(JSONObject(json)) }.getOrNull()
     }
 
-    fun startSession(goalHours: Int): FastingSession {
+    // ÚNICO CAMBIO: startTime es ahora opcional.
+    // Si el usuario indica que lleva X horas en ayuno, se pasa
+    // System.currentTimeMillis() - (X * 3_600_000) como startTime.
+    fun startSession(
+        goalHours: Int,
+        startTime: Long = System.currentTimeMillis()
+    ): FastingSession {
         val session = FastingSession(
             id = System.currentTimeMillis().toString(),
-            startTime = System.currentTimeMillis(),
+            startTime = startTime,
             goalHours = goalHours
         )
         prefs.edit().putString(KEY_ACTIVE, session.toJson().toString()).apply()
