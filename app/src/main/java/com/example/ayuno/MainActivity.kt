@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ayuno.ui.theme.AyunoTheme
 import com.example.ayuno.data.FastingSession
@@ -36,6 +37,20 @@ fun AyunoApp(storage: FastingStorage) {
     var goalHours by remember { mutableIntStateOf(16) }
     var historyKey by remember { mutableIntStateOf(0) }
     var showKnowledge by remember { mutableStateOf(false) }
+    // NUEVO: controla si se muestra el diálogo de "ya llevo horas"
+    var showStartDialog by remember { mutableStateOf(false) }
+
+    // NUEVO: diálogo para indicar horas transcurridas desde última ingesta
+    if (showStartDialog) {
+        StartFastingDialog(
+            onDismiss = { showStartDialog = false },
+            onConfirm = { offsetHours ->
+                val adjustedStart = System.currentTimeMillis() - (offsetHours * 3_600_000f).toLong()
+                activeSession = storage.startSession(goalHours, adjustedStart)
+                showStartDialog = false
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -101,19 +116,34 @@ fun AyunoApp(storage: FastingStorage) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Start Button
+                    // Botón 1: Comenzar ahora
                     Button(
                         onClick = {
                             activeSession = storage.startSession(goalHours)
                         },
                         modifier = Modifier
-                            .height(56.dp)
-                            .wrapContentWidth(),
+                            .fillMaxWidth()
+                            .height(52.dp),
                         shape = MaterialTheme.shapes.extraLarge
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Comenzar ayuno", style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // NUEVO — Botón 2: Ya llevo horas en ayuno
+                    OutlinedButton(
+                        onClick = { showStartDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = MaterialTheme.shapes.extraLarge
+                    ) {
+                        Icon(Icons.Default.Schedule, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Ya llevo horas en ayuno", style = MaterialTheme.typography.bodyLarge)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -132,6 +162,11 @@ fun AyunoApp(storage: FastingStorage) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Medical disclaimer
+                    MedicalDisclaimerCard()
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -199,6 +234,138 @@ fun AyunoApp(storage: FastingStorage) {
             }
 
             Spacer(modifier = Modifier.height(48.dp))
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NUEVO: StartFastingDialog
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun StartFastingDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (offsetHours: Float) -> Unit
+) {
+    var sliderValue by remember { mutableFloatStateOf(2f) }
+
+    val currentPhase = FASTING_PHASES.lastOrNull { sliderValue >= it.startHour }
+        ?: FASTING_PHASES.first()
+    val nextPhase    = FASTING_PHASES.firstOrNull { it.startHour > sliderValue }
+    val remainingH   = nextPhase?.let { it.startHour - sliderValue }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("¿Cuándo fue tu última comida?") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                Text(
+                    text      = "Hace %.1f horas".format(sliderValue),
+                    style     = MaterialTheme.typography.headlineSmall,
+                    color     = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier  = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Slider(
+                    value         = sliderValue,
+                    onValueChange = { sliderValue = (it * 2).toInt() / 2f }, // saltos de 0.5h
+                    valueRange    = 0.5f..23f,
+                    steps         = 44,
+                    modifier      = Modifier.fillMaxWidth()
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("0.5h", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("23h", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Vista previa de fase
+                Card(
+                    colors   = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text  = "📍 Fase actual: ${currentPhase.name}",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        if (remainingH != null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text  = "⏭ Siguiente fase en %.1fh".format(remainingH),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text      = currentPhase.description,
+                            style     = MaterialTheme.typography.bodySmall,
+                            color     = MaterialTheme.colorScheme.onPrimaryContainer,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(sliderValue) }) {
+                Text("Iniciar ayuno")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Medical disclaimer card
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun MedicalDisclaimerCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = MaterialTheme.shapes.large,
+        colors   = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint     = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp).padding(top = 2.dp)
+            )
+            Text(
+                text = "Recuerda consultar con tu médico para ayunos de largo plazo y seguir su consejo y guía. Esta app es tan solo un gestor del ayuno, no una recomendación médica. El ayuno puede ser diferente para cada persona en función de su fisiología y necesidades médicas y metabólicas.",
+                style     = MaterialTheme.typography.bodySmall,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Start
+            )
         }
     }
 }
