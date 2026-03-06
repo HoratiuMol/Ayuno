@@ -2,17 +2,17 @@ package com.example.ayuno
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ayuno.data.FastingStorage
 import kotlinx.coroutines.delay
@@ -21,7 +21,123 @@ import java.util.*
 import kotlin.math.min
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FastingRing — per-phase ring with countdown/countup
+// Data model
+// ─────────────────────────────────────────────────────────────────────────────
+
+data class FastingPhase(
+    val name: String,
+    val startHour: Int,
+    val endHour: Int,           // used for display range
+    val description: String,
+    val motivation: String,
+    val benefits: List<String>,
+    val cautions: List<String>,
+    val hungerLevel: String,    // e.g. "Nulo", "Creciente", "Alto"
+    val hungerEmoji: String
+)
+
+val FASTING_PHASES = listOf(
+    FastingPhase(
+        name        = "Fase postprandial",
+        startHour   = 0,
+        endHour     = 6,
+        description = "Tu cuerpo está utilizando la energía de los alimentos que acabas de comer. El páncreas produce insulina para usar la glucosa y almacenar el exceso como glucógeno y grasa.",
+        motivation  = "La disciplina empieza cuando termina comer",
+        benefits    = listOf(
+            "Digestión activa y absorción de nutrientes",
+            "Almacenamiento de glucógeno hepático y muscular"
+        ),
+        cautions    = listOf(
+            "No es recomendable hacer ejercicio intenso justo después de comer"
+        ),
+        hungerLevel = "Nulo",
+        hungerEmoji = "😌"
+    ),
+    FastingPhase(
+        name        = "Quema de reservas",
+        startHour   = 6,
+        endHour     = 16,
+        description = "Tu cuerpo comienza a usar las reservas de glucógeno. La glucosa almacenada en el hígado mantiene los niveles en sangre. Se activan la gluconeogénesis y la lipólisis.",
+        motivation  = "Tu cuerpo aprende a usar reservas",
+        benefits    = listOf(
+            "Se inicia la quema de grasa almacenada",
+            "Producción de cuerpos cetónicos para energía",
+            "Comienza la autofagia (renovación celular)",
+            "Aumento de sensibilidad a la insulina"
+        ),
+        cautions    = listOf(
+            "Puedes sentir hambre o ligera irritabilidad",
+            "Mantente bien hidratado/a"
+        ),
+        hungerLevel = "Creciente",
+        hungerEmoji = "😐"
+    ),
+    FastingPhase(
+        name        = "Cetosis temprana",
+        startHour   = 16,
+        endHour     = 24,
+        description = "La glucosa en las células y el glucógeno se agotan. Tu cuerpo quema grasa almacenada como fuente principal de energía. La autofagia se intensifica.",
+        motivation  = "La incomodidad forja control y claridad",
+        benefits    = listOf(
+            "Quema activa de grasa corporal",
+            "Autofagia más intensa: limpieza celular",
+            "Regulación del perfil lipídico",
+            "Mejora de la sensibilidad a la insulina"
+        ),
+        cautions    = listOf(
+            "Posible dolor de cabeza si no estás hidratado",
+            "No recomendado sin experiencia previa en ayunos"
+        ),
+        hungerLevel = "Alto",
+        hungerEmoji = "😣"
+    ),
+    FastingPhase(
+        name        = "Cetosis profunda",
+        startHour   = 24,
+        endHour     = 72,
+        description = "Tu cuerpo entra en cetosis plena: quema reservas de grasa para energía. Los cuerpos cetónicos actúan como combustible para el cerebro.",
+        motivation  = "Ahora quemas grasa, sigue adelante",
+        benefits    = listOf(
+            "Rendimiento cognitivo mejorado y claridad mental",
+            "Mayor sensación de energía y bienestar",
+            "Reducción de triglicéridos y colesterol LDL",
+            "Renovación celular profunda (autofagia)",
+            "Posible efecto preventivo contra el cáncer y el envejecimiento"
+        ),
+        cautions    = listOf(
+            "Requiere supervisión médica",
+            "No apto para principiantes",
+            "Asegúrate de tomar agua, infusiones y electrolitos",
+            "Detener si aparecen mareos persistentes o debilidad"
+        ),
+        hungerLevel = "Decreciente",
+        hungerEmoji = "🙂"
+    ),
+    FastingPhase(
+        name        = "Cetosis extendida",
+        startHour   = 72,
+        endHour     = 96,
+        description = "Estado profundo de cetosis. Todos los órganos usan cuerpos cetónicos y grasas. Las hormonas tiroideas pueden verse afectadas.",
+        motivation  = "Tu cuerpo se renueva desde dentro",
+        benefits    = listOf(
+            "Máxima autofagia y renovación celular",
+            "Mayor resistencia al estrés y toxinas",
+            "El hambre tiende a disminuir a partir del tercer día"
+        ),
+        cautions    = listOf(
+            "⚠️ SOLO con supervisión médica estricta",
+            "Las hormonas tiroideas pueden alterarse",
+            "El metabolismo puede verse afectado negativamente",
+            "No apto para personas con TCA, embarazadas, niños o ancianos",
+            "Detener inmediatamente si hay desmayos o confusión"
+        ),
+        hungerLevel = "Bajo",
+        hungerEmoji = "😶"
+    )
+)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FastingRing — per-phase ring with countdown
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -33,48 +149,38 @@ fun FastingRingView(
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(Unit) {
-        while (true) {
-            delay(1_000)
-            now = System.currentTimeMillis()
-        }
+        while (true) { delay(1_000); now = System.currentTimeMillis() }
     }
 
     val elapsedMs    = now - startTime
     val elapsedHours = elapsedMs / 3_600_000f
 
-    // Current and next phase
     val currentPhase = FASTING_PHASES.lastOrNull { elapsedHours >= it.startHour }
         ?: FASTING_PHASES.first()
     val nextPhase    = FASTING_PHASES.firstOrNull { it.startHour > elapsedHours }
 
-    // Phase ring: progress within current phase (0..1)
-    val phaseStartMs = currentPhase.startHour * 3_600_000L
-    val phaseEndMs   = (nextPhase?.startHour ?: (currentPhase.startHour + 4)) * 3_600_000L
-    val phaseDurMs   = phaseEndMs - phaseStartMs
-    val phaseElapsed = elapsedMs - phaseStartMs
+    val phaseStartMs  = currentPhase.startHour * 3_600_000L
+    val phaseEndMs    = (nextPhase?.startHour ?: (currentPhase.startHour + 4)) * 3_600_000L
+    val phaseDurMs    = phaseEndMs - phaseStartMs
+    val phaseElapsed  = elapsedMs - phaseStartMs
     val phaseProgress = (phaseElapsed.toFloat() / phaseDurMs).coerceIn(0f, 1f)
 
-    // Time remaining until next phase (countdown) or elapsed if last phase
     val remainingMs  = if (nextPhase != null) phaseEndMs - elapsedMs else elapsedMs
     val remainingH   = (remainingMs / 3_600_000).coerceAtLeast(0)
     val remainingMin = ((remainingMs % 3_600_000) / 60_000).coerceAtLeast(0)
     val remainingSec = ((remainingMs % 60_000) / 1_000).coerceAtLeast(0)
 
-    val isLastPhase  = nextPhase == null
-    val showSeconds  = remainingH == 0L  // show seconds only when < 1h left
-
-    val primary  = MaterialTheme.colorScheme.primary
-    val surface  = MaterialTheme.colorScheme.surfaceVariant
+    val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surfaceVariant
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        // Phase name above the ring
         Text(
-            text  = currentPhase.name.uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text     = currentPhase.name.uppercase(),
+            style    = MaterialTheme.typography.labelMedium,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
@@ -87,57 +193,42 @@ fun FastingRingView(
                 val diameter = min(size.width, size.height) - stroke
                 val topLeft  = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
                 val arcSize  = Size(diameter, diameter)
-
-                // Background track
                 drawArc(
-                    color      = surface,
-                    startAngle = -90f,
-                    sweepAngle = 360f,
-                    useCenter  = false,
-                    topLeft    = topLeft,
-                    size       = arcSize,
-                    style      = Stroke(width = stroke, cap = StrokeCap.Round)
+                    color = surface, startAngle = -90f, sweepAngle = 360f,
+                    useCenter = false, topLeft = topLeft, size = arcSize,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round)
                 )
-                // Phase progress arc
                 drawArc(
-                    color      = primary,
-                    startAngle = -90f,
-                    sweepAngle = 360f * phaseProgress,
-                    useCenter  = false,
-                    topLeft    = topLeft,
-                    size       = arcSize,
-                    style      = Stroke(width = stroke, cap = StrokeCap.Round)
+                    color = primary, startAngle = -90f, sweepAngle = 360f * phaseProgress,
+                    useCenter = false, topLeft = topLeft, size = arcSize,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round)
                 )
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Main timer
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            ) {
                 Text(
-                    text  = if (showSeconds)
-                        "%02d:%02d".format(remainingMin, remainingSec)
-                    else
-                        "%02d:%02d".format(remainingH, remainingMin),
-                    style = MaterialTheme.typography.headlineLarge
+                    text      = "%02d:%02d:%02d".format(remainingH, remainingMin, remainingSec),
+                    style     = MaterialTheme.typography.headlineMedium,
+                    color     = MaterialTheme.colorScheme.onSurface,
+                    maxLines  = 1,
+                    textAlign = TextAlign.Center,
+                    modifier  = Modifier.fillMaxWidth()
                 )
-                // Seconds row when showing h:min
-                if (!showSeconds && !isLastPhase) {
-                    Text(
-                        text  = ":%02d".format(remainingSec),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                // Label below
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text  = if (isLastPhase) "Ayuno completado 🎉"
-                    else "Tu ayuno comienza pronto",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text      = currentPhase.motivation,
+                    style     = MaterialTheme.typography.labelSmall,
+                    color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines  = 2,
+                    textAlign = TextAlign.Center,
+                    modifier  = Modifier.fillMaxWidth()
                 )
             }
         }
 
-        // Next phase hint
         if (nextPhase != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -150,44 +241,83 @@ fun FastingRingView(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PhaseInfo  (equivalent to PhaseInfo.tsx)
+// PhaseInfoSection — shown below buttons during active fasting
 // ─────────────────────────────────────────────────────────────────────────────
-
-data class FastingPhase(val name: String, val startHour: Int, val description: String)
-
-val FASTING_PHASES = listOf(
-    FastingPhase("Digestión",         0,  "El cuerpo procesa la última comida y almacena glucosa."),
-    FastingPhase("Estado de ayuno",   4,  "Los niveles de insulina bajan; el cuerpo empieza a quemar grasa."),
-    FastingPhase("Gluconeogénesis",   8,  "El hígado produce glucosa a partir de reservas no glucídicas."),
-    FastingPhase("Cetosis leve",      12, "Comienza la producción de cuerpos cetónicos como fuente de energía."),
-    FastingPhase("Cetosis",           16, "La cetosis se intensifica; mayor quema de grasa."),
-    FastingPhase("Autofagia",         18, "Las células inician procesos de limpieza y reciclaje celular."),
-    FastingPhase("Cetosis profunda",  24, "Los niveles de cetona alcanzan su pico; beneficios cognitivos."),
-    FastingPhase("Regeneración",      36, "Aumento de la hormona de crecimiento y reparación de tejidos.")
-)
 
 @Composable
 fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-
     LaunchedEffect(Unit) {
         while (true) { delay(1_000); now = System.currentTimeMillis() }
     }
 
     val elapsedHours = (now - startTime) / 3_600_000f
-    val currentPhase = FASTING_PHASES.lastOrNull { elapsedHours >= it.startHour }
+    val phase = FASTING_PHASES.lastOrNull { elapsedHours >= it.startHour }
         ?: FASTING_PHASES.first()
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        // Description
         Text(
-            text  = currentPhase.description,
-            style = MaterialTheme.typography.bodyMedium
+            text  = phase.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
+
+        // Benefits
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text       = "✦ Beneficios",
+                style      = MaterialTheme.typography.labelMedium,
+                color      = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold
+            )
+            phase.benefits.forEach { benefit ->
+                Text(
+                    text  = "• $benefit",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // Cautions
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text       = "⚠ Precauciones",
+                style      = MaterialTheme.typography.labelMedium,
+                color      = MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.SemiBold
+            )
+            phase.cautions.forEach { caution ->
+                Text(
+                    text  = "• $caution",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // Hunger indicator
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text  = phase.hungerEmoji,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text  = "Nivel de hambre: ${phase.hungerLevel}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GoalSelector  (equivalent to GoalSelector.tsx)
+// GoalSelector
 // ─────────────────────────────────────────────────────────────────────────────
 
 val GOALS = listOf(12, 14, 16, 18, 20, 24)
@@ -196,19 +326,18 @@ val GOALS = listOf(12, 14, 16, 18, 20, 24)
 fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text  = "Elige tu objetivo",
-            style = MaterialTheme.typography.titleMedium,
+            text     = "Elige tu objetivo",
+            style    = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier              = Modifier.fillMaxWidth(),
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             GOALS.forEach { hours ->
-                val selected = hours == selectedGoal
                 FilterChip(
-                    selected = selected,
+                    selected = hours == selectedGoal,
                     onClick  = { onSelect(hours) },
                     label    = { Text("${hours}h") },
                     modifier = Modifier.weight(1f)
@@ -219,7 +348,7 @@ fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FastingHistory  (equivalent to FastingHistory.tsx)
+// FastingHistory
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -240,15 +369,11 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
             val durationH   = durationMs / 3_600_000
             val durationMin = (durationMs % 3_600_000) / 60_000
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                shape = MaterialTheme.shapes.medium
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                shape    = MaterialTheme.shapes.medium
             ) {
                 Row(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .fillMaxWidth(),
+                    modifier              = Modifier.padding(12.dp).fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
@@ -275,39 +400,152 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// KnowledgeBase  (equivalent to KnowledgeBase.tsx)
+// KnowledgeBase — full guide from PDF
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun KnowledgeBaseScreen(onBack: () -> Unit) {
-    Column {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         TextButton(onClick = onBack) {
             Text("← Volver")
         }
+
         Text(
-            text     = "Guía del ayuno intermitente",
+            text     = "Guía del ayuno",
             style    = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(vertical = 12.dp)
+            fontWeight = FontWeight.Bold
         )
+        Text(
+            text  = "Conoce qué ocurre en tu cuerpo durante cada fase del ayuno, sus beneficios y las precauciones a tener en cuenta.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         FASTING_PHASES.forEach { phase ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                shape = MaterialTheme.shapes.medium
+            PhaseGuideCard(phase = phase)
+        }
+
+        // General considerations
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape    = MaterialTheme.shapes.large,
+            colors   = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text       = "Consideraciones generales",
+                    style      = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                listOf(
+                    "Mantente siempre bien hidratado: agua, infusiones y café solo están permitidos.",
+                    "No se recomienda en niños, embarazadas, ancianos ni personas con TCA.",
+                    "Ayunos de más de 24h requieren supervisión médica.",
+                    "Si experimentas mareos persistentes, atracones, irritabilidad extrema o bajada de rendimiento, detén el ayuno.",
+                    "Lo ideal es empezar de forma progresiva: 12/12, luego 14/10, después 16/8."
+                ).forEach { tip ->
                     Text(
-                        text  = "Hora ${phase.startHour}+ — ${phase.name}",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text  = phase.description,
-                        style = MaterialTheme.typography.bodyMedium
+                        text  = "• $tip",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun PhaseGuideCard(phase: FastingPhase) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Header
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Text(
+                    text       = phase.name,
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text  = "${phase.startHour}–${phase.endHour}h",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Description
+            Text(
+                text  = phase.description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            // Benefits
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    text       = "✦ Beneficios",
+                    style      = MaterialTheme.typography.labelMedium,
+                    color      = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+                phase.benefits.forEach { b ->
+                    Text(
+                        text  = "• $b",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            // Cautions
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    text       = "⚠ Precauciones",
+                    style      = MaterialTheme.typography.labelMedium,
+                    color      = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.SemiBold
+                )
+                phase.cautions.forEach { c ->
+                    Text(
+                        text  = "• $c",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            // Hunger
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Row(
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(text = phase.hungerEmoji, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text  = "Nivel de hambre: ${phase.hungerLevel}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
