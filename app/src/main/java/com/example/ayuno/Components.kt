@@ -1,5 +1,7 @@
 package com.example.ayuno
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
@@ -547,6 +549,120 @@ fun PhaseGuideCard(phase: FastingPhase) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// StatsRow — racha, completados, promedio
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun StatsRow(key: Int, storage: FastingStorage) {
+    val history = remember(key) { storage.getHistory() }
+
+    // Completed sessions only
+    val completed = history.filter { it.completed }
+
+    // Current streak: consecutive days ending today with a completed session
+    val streak = remember(key) {
+        if (completed.isEmpty()) return@remember 0
+        val calendar = java.util.Calendar.getInstance()
+        var streakCount = 0
+        var checkDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+        val year = calendar.get(java.util.Calendar.YEAR)
+
+        for (session in completed) {
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = session.startTime
+            val sessionDay  = cal.get(java.util.Calendar.DAY_OF_YEAR)
+            val sessionYear = cal.get(java.util.Calendar.YEAR)
+            if (sessionYear == year && sessionDay == checkDay) {
+                streakCount++
+                checkDay--
+            } else break
+        }
+        streakCount
+    }
+
+    // Average duration in hours
+    val avgHours = remember(key) {
+        if (completed.isEmpty()) return@remember 0.0
+        val totalMs = completed.sumOf {
+            (it.endTime ?: it.startTime) - it.startTime
+        }
+        totalMs.toDouble() / completed.size / 3_600_000.0
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        StatCard(
+            icon     = Icons.Default.Whatshot,
+            value    = "$streak",
+            label    = "días racha",
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            icon     = Icons.Default.CheckCircle,
+            value    = "${completed.size}",
+            label    = "completados",
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            icon     = Icons.Default.Timer,
+            value    = "%.1f".format(avgHours) + "h",
+            label    = "promedio",
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun StatCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier  = modifier,
+        shape     = MaterialTheme.shapes.large,
+        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier            = Modifier
+                .padding(vertical = 16.dp, horizontal = 8.dp)
+                .fillMaxWidth()
+                .heightIn(min = 100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            androidx.compose.material3.Icon(
+                imageVector        = icon,
+                contentDescription = null,
+                tint               = MaterialTheme.colorScheme.primary,
+                modifier           = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text      = value,
+                style     = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier  = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text      = label,
+                style     = MaterialTheme.typography.labelSmall,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier  = Modifier.fillMaxWidth(),
+                minLines  = 2
+            )
         }
     }
 }
