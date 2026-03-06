@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import java.util.Calendar
 import com.example.ayuno.ui.theme.AyunoTheme
 import com.example.ayuno.data.FastingSession
 import com.example.ayuno.data.FastingStorage
@@ -108,6 +109,11 @@ fun AyunoApp(storage: FastingStorage) {
                 }
 
                 activeSession == null -> {
+                    // Daily motivational quote
+                    DailyQuoteCard()
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
                     // Goal Selector
                     GoalSelectorSection(
                         selectedGoal = goalHours,
@@ -367,5 +373,60 @@ fun MedicalDisclaimerCard() {
                 textAlign = TextAlign.Start
             )
         }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Daily motivational quote — rotates by day of year
+// ─────────────────────────────────────────────────────────────────────────────
+
+private data class Quote(val text: String, val author: String)
+
+private val QUOTES = listOf(
+    Quote("El ayuno es la puerta hacia la claridad.", "Proverbio"),
+    Quote("Tu cuerpo es un templo, cuídalo con sabiduría.", "Hipócrates"),
+    Quote("La disciplina es el puente entre metas y logros.", "Jim Rohn"),
+    Quote("Comer es una necesidad, pero comer con inteligencia es un arte.", "La Rochefoucauld"),
+    Quote("El ayuno del cuerpo es alimento del alma.", "San Juan Crisóstomo"),
+    Quote("La simplicidad es la sofisticación definitiva.", "Leonardo da Vinci"),
+    Quote("Cuando el estómago descansa, la mente despierta.", "Proverbio árabe"),
+    Quote("No es lo que comes, sino lo que digieres, lo que te hace fuerte.", "Proverbio"),
+    Quote("El descanso es tan importante como el movimiento.", "Sabiduría popular"),
+    Quote("Menos es más cuando se trata de alimentar el cuerpo.", "Paracelso"),
+    Quote("La paciencia es amarga, pero sus frutos son dulces.", "Aristóteles"),
+    Quote("Cuida tu cuerpo, es el único lugar donde vives.", "Jim Rohn"),
+    Quote("El que conquista a otros es fuerte; el que se conquista a sí mismo es poderoso.", "Lao Tse"),
+    Quote("La salud no es valorada hasta que llega la enfermedad.", "Thomas Fuller"),
+    Quote("Cada día es una nueva oportunidad para cuidarte.", "Sabiduría popular")
+)
+
+@Composable
+fun DailyQuoteCard() {
+    val quote = remember {
+        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        QUOTES[dayOfYear % QUOTES.size]
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        Text(
+            text      = "\"${quote.text}\"",
+            style     = MaterialTheme.typography.bodyMedium.copy(
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            ),
+            color     = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text      = "— ${quote.author}",
+            style     = MaterialTheme.typography.labelSmall,
+            color     = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }
