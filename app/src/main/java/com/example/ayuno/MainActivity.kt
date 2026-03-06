@@ -171,6 +171,11 @@ fun AyunoApp(storage: FastingStorage) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Stats row
+                    StatsRow(key = historyKey, storage = storage)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     // Medical disclaimer
                     MedicalDisclaimerCard()
 
