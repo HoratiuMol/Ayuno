@@ -212,7 +212,7 @@ fun FastingRingView(
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
                 Text(
-                    text      = "%02d:%02d:%02d".format(remainingH, remainingMin, remainingSec),
+                    text      = "%02d:%02d".format(remainingH, remainingMin),
                     style     = MaterialTheme.typography.headlineMedium,
                     color     = MaterialTheme.colorScheme.onSurface,
                     maxLines  = 1,
@@ -231,13 +231,110 @@ fun FastingRingView(
             }
         }
 
-        if (nextPhase != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+        // Phase progress tracker
+        Spacer(modifier = Modifier.height(16.dp))
+        PhaseTracker(elapsedHours = elapsedHours, currentPhase = currentPhase, nextPhase = nextPhase)
+    }
+}
+
+@Composable
+fun PhaseTracker(
+    elapsedHours: Float,
+    currentPhase: FastingPhase,
+    nextPhase: FastingPhase?
+) {
+    val completedPhases = FASTING_PHASES.filter { it.startHour < currentPhase.startHour }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        // Completed phases
+        completedPhases.forEach { phase ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.primary,
+                    modifier           = Modifier.size(18.dp)
+                )
+                Text(
+                    text  = phase.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text  = "${phase.startHour}–${phase.endHour}h",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Divider before current
+        if (completedPhases.isNotEmpty()) {
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+        }
+
+        // Current phase
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector        = Icons.Default.RadioButtonChecked,
+                contentDescription = null,
+                tint               = MaterialTheme.colorScheme.primary,
+                modifier           = Modifier.size(18.dp)
+            )
             Text(
-                text  = "Siguiente: ${nextPhase.name}",
-                style = MaterialTheme.typography.bodySmall,
+                text       = currentPhase.name,
+                style      = MaterialTheme.typography.bodySmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                color      = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text  = "${currentPhase.startHour}–${currentPhase.endHour}h",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
+        }
+
+        // Next phase
+        if (nextPhase != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.RadioButtonUnchecked,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier           = Modifier.size(18.dp)
+                )
+                Text(
+                    text  = nextPhase.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text  = "${nextPhase.startHour}–${nextPhase.endHour}h",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
         }
     }
 }
