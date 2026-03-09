@@ -229,6 +229,17 @@ fun AyunoApp(storage: FastingStorage) {
                         }
                     }
 
+                    // Guide button during active fasting
+                    TextButton(onClick = { showKnowledge = true }) {
+                        Icon(
+                            Icons.Default.MenuOpen,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Phase Info Card
