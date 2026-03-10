@@ -7,11 +7,11 @@ plugins {
 android {
 
 
-    namespace = "com.example.ayuno"
+    namespace = "com.moldovan.ayuno"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.ayuno"
+        applicationId = "com.moldovan.ayuno"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

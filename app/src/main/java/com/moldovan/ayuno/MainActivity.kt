@@ -1,4 +1,4 @@
-package com.example.ayuno
+package com.moldovan.ayuno
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
-import com.example.ayuno.ui.theme.AyunoTheme
-import com.example.ayuno.data.FastingSession
-import com.example.ayuno.data.FastingStorage
+import com.moldovan.ayuno.ui.theme.AyunoTheme
+import com.moldovan.ayuno.data.FastingSession
+import com.moldovan.ayuno.data.FastingStorage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

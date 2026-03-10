@@ -1,4 +1,4 @@
-package com.example.ayuno.ui.theme
+package com.moldovan.ayuno.ui.theme
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable

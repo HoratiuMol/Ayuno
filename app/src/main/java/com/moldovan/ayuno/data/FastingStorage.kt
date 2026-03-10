@@ -1,4 +1,4 @@
-package com.example.ayuno.data
+package com.moldovan.ayuno.data
 
 import android.content.Context
 import android.content.SharedPreferences
