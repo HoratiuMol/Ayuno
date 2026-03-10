@@ -1,4 +1,4 @@
-package com.example.ayuno.ui.theme
+package com.moldovan.ayuno.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

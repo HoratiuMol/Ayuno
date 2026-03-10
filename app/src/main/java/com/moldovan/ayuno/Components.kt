@@ -1,10 +1,9 @@
-package com.example.ayuno
+package com.moldovan.ayuno
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +15,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.ayuno.data.FastingStorage
+import com.moldovan.ayuno.data.FastingStorage
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
