@@ -20,6 +20,12 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
+//import para ajusta las horas dentro del cuadro
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data model
@@ -424,22 +430,50 @@ val GOALS = listOf(12, 14, 16, 18, 20, 24)
 fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text     = "Elige tu objetivo",
-            style    = MaterialTheme.typography.titleMedium,
+            text  = "Elige tu objetivo",
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier              = Modifier.fillMaxWidth(),
-            verticalAlignment     = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             GOALS.forEach { hours ->
-                FilterChip(
-                    selected = hours == selectedGoal,
-                    onClick  = { onSelect(hours) },
-                    label    = { Text("${hours}h") },
-                    modifier = Modifier.weight(1f)
-                )
+                val selected = hours == selectedGoal
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .aspectRatio(0.85f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (selected)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .clickable { onSelect(hours) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text  = "$hours",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (selected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text  = "h",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (selected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }
