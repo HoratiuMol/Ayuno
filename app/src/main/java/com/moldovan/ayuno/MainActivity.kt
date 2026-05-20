@@ -19,10 +19,19 @@ import com.moldovan.ayuno.ui.theme.AyunoTheme
 import com.moldovan.ayuno.data.FastingSession
 import com.moldovan.ayuno.data.FastingStorage
 
+//añadido imports tras implementar notificaiones
+import android.os.Build
+import com.moldovan.ayuno.data.NotificationHelper
+import com.moldovan.ayuno.data.FASTING_PHASES
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val storage = FastingStorage(this)
+        NotificationHelper.createChannel(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
+        }
         setContent {
             AyunoTheme {
                 AyunoApp(storage = storage)

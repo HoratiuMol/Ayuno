@@ -1,13 +1,44 @@
 package com.moldovan.ayuno
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
@@ -15,133 +46,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.moldovan.ayuno.data.FASTING_PHASES
+import com.moldovan.ayuno.data.FastingPhase
 import com.moldovan.ayuno.data.FastingStorage
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.min
-//import para ajusta las horas dentro del cuadro
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Data model
-// ─────────────────────────────────────────────────────────────────────────────
-
-data class FastingPhase(
-    val name: String,
-    val startHour: Int,
-    val endHour: Int,           // used for display range
-    val description: String,
-    val motivation: String,
-    val benefits: List<String>,
-    val cautions: List<String>,
-    val hungerLevel: String,    // e.g. "Nulo", "Creciente", "Alto"
-    val hungerEmoji: String
-)
-
-val FASTING_PHASES = listOf(
-    FastingPhase(
-        name        = "Fase postprandial",
-        startHour   = 0,
-        endHour     = 6,
-        description = "Tu cuerpo está utilizando la energía de los alimentos que acabas de comer. El páncreas produce insulina para usar la glucosa y almacenar el exceso como glucógeno y grasa.",
-        motivation  = "La disciplina empieza cuando termina comer",
-        benefits    = listOf(
-            "Digestión activa y absorción de nutrientes",
-            "Almacenamiento de glucógeno hepático y muscular"
-        ),
-        cautions    = listOf(
-            "No es recomendable hacer ejercicio intenso justo después de comer"
-        ),
-        hungerLevel = "Nulo",
-        hungerEmoji = "😌"
-    ),
-    FastingPhase(
-        name        = "Quema de reservas",
-        startHour   = 6,
-        endHour     = 16,
-        description = "Tu cuerpo comienza a usar las reservas de glucógeno. La glucosa almacenada en el hígado mantiene los niveles en sangre. Se activan la gluconeogénesis y la lipólisis.",
-        motivation  = "Tu cuerpo aprende a usar reservas",
-        benefits    = listOf(
-            "Se inicia la quema de grasa almacenada",
-            "Producción de cuerpos cetónicos para energía",
-            "Comienza la autofagia (renovación celular)",
-            "Aumento de sensibilidad a la insulina"
-        ),
-        cautions    = listOf(
-            "Puedes sentir hambre o ligera irritabilidad",
-            "Mantente bien hidratado/a"
-        ),
-        hungerLevel = "Creciente",
-        hungerEmoji = "😐"
-    ),
-    FastingPhase(
-        name        = "Cetosis temprana",
-        startHour   = 16,
-        endHour     = 24,
-        description = "La glucosa en las células y el glucógeno se agotan. Tu cuerpo quema grasa almacenada como fuente principal de energía. La autofagia se intensifica.",
-        motivation  = "La incomodidad forja control y claridad",
-        benefits    = listOf(
-            "Quema activa de grasa corporal",
-            "Autofagia más intensa: limpieza celular",
-            "Regulación del perfil lipídico",
-            "Mejora de la sensibilidad a la insulina"
-        ),
-        cautions    = listOf(
-            "Posible dolor de cabeza si no estás hidratado",
-            "No recomendado sin experiencia previa en ayunos"
-        ),
-        hungerLevel = "Alto",
-        hungerEmoji = "😣"
-    ),
-    FastingPhase(
-        name        = "Cetosis profunda",
-        startHour   = 24,
-        endHour     = 72,
-        description = "Tu cuerpo entra en cetosis plena: quema reservas de grasa para energía. Los cuerpos cetónicos actúan como combustible para el cerebro.",
-        motivation  = "Ahora quemas grasa, sigue adelante",
-        benefits    = listOf(
-            "Rendimiento cognitivo mejorado y claridad mental",
-            "Mayor sensación de energía y bienestar",
-            "Reducción de triglicéridos y colesterol LDL",
-            "Renovación celular profunda (autofagia)",
-            "Posible efecto preventivo contra el cáncer y el envejecimiento"
-        ),
-        cautions    = listOf(
-            "Requiere supervisión médica",
-            "No apto para principiantes",
-            "Asegúrate de tomar agua, infusiones y electrolitos",
-            "Detener si aparecen mareos persistentes o debilidad"
-        ),
-        hungerLevel = "Decreciente",
-        hungerEmoji = "🙂"
-    ),
-    FastingPhase(
-        name        = "Cetosis extendida",
-        startHour   = 72,
-        endHour     = 96,
-        description = "Estado profundo de cetosis. Todos los órganos usan cuerpos cetónicos y grasas. Las hormonas tiroideas pueden verse afectadas.",
-        motivation  = "Tu cuerpo se renueva desde dentro",
-        benefits    = listOf(
-            "Máxima autofagia y renovación celular",
-            "Mayor resistencia al estrés y toxinas",
-            "El hambre tiende a disminuir a partir del tercer día"
-        ),
-        cautions    = listOf(
-            "⚠️ SOLO con supervisión médica estricta",
-            "Las hormonas tiroideas pueden alterarse",
-            "El metabolismo puede verse afectado negativamente",
-            "No apto para personas con TCA, embarazadas, niños o ancianos",
-            "Detener inmediatamente si hay desmayos o confusión"
-        ),
-        hungerLevel = "Bajo",
-        hungerEmoji = "😶"
-    )
-)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FastingRing — per-phase ring with countdown
@@ -175,7 +87,6 @@ fun FastingRingView(
     val remainingMs  = if (nextPhase != null) phaseEndMs - elapsedMs else elapsedMs
     val remainingH   = (remainingMs / 3_600_000).coerceAtLeast(0)
     val remainingMin = ((remainingMs % 3_600_000) / 60_000).coerceAtLeast(0)
-    val remainingSec = ((remainingMs % 60_000) / 1_000).coerceAtLeast(0)
 
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surfaceVariant
@@ -216,6 +127,7 @@ fun FastingRingView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
+                // B01 — solo HH:MM, sin segundos
                 Text(
                     text      = "%02d:%02d".format(remainingH, remainingMin),
                     style     = MaterialTheme.typography.headlineMedium,
@@ -236,11 +148,14 @@ fun FastingRingView(
             }
         }
 
-        // Phase progress tracker
         Spacer(modifier = Modifier.height(16.dp))
         PhaseTracker(elapsedHours = elapsedHours, currentPhase = currentPhase, nextPhase = nextPhase)
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PhaseTracker
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun PhaseTracker(
@@ -254,14 +169,13 @@ fun PhaseTracker(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Completed phases
         completedPhases.forEach { phase ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
+                androidx.compose.material3.Icon(
                     imageVector        = Icons.Default.CheckCircle,
                     contentDescription = null,
                     tint               = MaterialTheme.colorScheme.primary,
@@ -281,7 +195,6 @@ fun PhaseTracker(
             }
         }
 
-        // Divider before current
         if (completedPhases.isNotEmpty()) {
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant,
@@ -289,13 +202,12 @@ fun PhaseTracker(
             )
         }
 
-        // Current phase
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
+            androidx.compose.material3.Icon(
                 imageVector        = Icons.Default.RadioButtonChecked,
                 contentDescription = null,
                 tint               = MaterialTheme.colorScheme.primary,
@@ -304,7 +216,7 @@ fun PhaseTracker(
             Text(
                 text       = currentPhase.name,
                 style      = MaterialTheme.typography.bodySmall,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold,
                 color      = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -315,14 +227,13 @@ fun PhaseTracker(
             )
         }
 
-        // Next phase
         if (nextPhase != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
+                androidx.compose.material3.Icon(
                     imageVector        = Icons.Default.RadioButtonUnchecked,
                     contentDescription = null,
                     tint               = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -361,14 +272,12 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        // Description
         Text(
             text  = phase.description,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        // Benefits
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text       = "✦ Beneficios",
@@ -385,7 +294,6 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
             }
         }
 
-        // Cautions
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text       = "⚠ Precauciones",
@@ -402,7 +310,6 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
             }
         }
 
-        // Hunger indicator
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -430,14 +337,14 @@ val GOALS = listOf(12, 14, 16, 18, 20, 24)
 fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text  = "Elige tu objetivo",
-            style = MaterialTheme.typography.titleMedium,
+            text     = "Elige tu objetivo",
+            style    = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier              = Modifier.fillMaxWidth(),
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             GOALS.forEach { hours ->
                 val selected = hours == selectedGoal
@@ -447,10 +354,8 @@ fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
                         .aspectRatio(0.85f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(
-                            if (selected)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else
-                                MaterialTheme.colorScheme.surfaceVariant
+                            if (selected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
                         )
                         .clickable { onSelect(hours) },
                     contentAlignment = Alignment.Center
@@ -459,18 +364,14 @@ fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
                         Text(
                             text  = "$hours",
                             style = MaterialTheme.typography.titleMedium,
-                            color = if (selected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text  = "h",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (selected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -480,7 +381,7 @@ fun GoalSelectorSection(selectedGoal: Int, onSelect: (Int) -> Unit) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FastingHistory
+// FastingHistory — B06
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -496,20 +397,23 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
             style    = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        history.take(10).forEach { session ->
+        history.take(30).forEach { session ->
             val durationMs  = (session.endTime ?: System.currentTimeMillis()) - session.startTime
             val durationH   = durationMs / 3_600_000
             val durationMin = (durationMs % 3_600_000) / 60_000
+
             Card(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                shape    = MaterialTheme.shapes.medium
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = MaterialTheme.shapes.medium
             ) {
                 Row(
                     modifier              = Modifier.padding(12.dp).fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text  = fmt.format(Date(session.startTime)),
                             style = MaterialTheme.typography.bodySmall,
@@ -519,10 +423,25 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                             text  = "Duración: %dh %02dm".format(durationH, durationMin),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        if (session.completedPhases.isNotEmpty()) {
+                            Text(
+                                text  = "Última fase: ${session.completedPhases.last()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     if (session.completed) {
                         Badge(containerColor = MaterialTheme.colorScheme.primary) {
                             Text("✓ ${session.goalHours}h")
+                        }
+                    } else if (session.endTime != null) {
+                        Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+                            Text(
+                                text  = "Cancelado",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -532,7 +451,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// KnowledgeBase — full guide from PDF
+// KnowledgeBase
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -546,8 +465,8 @@ fun KnowledgeBaseScreen(onBack: () -> Unit) {
         }
 
         Text(
-            text     = "Guía del ayuno",
-            style    = MaterialTheme.typography.headlineSmall,
+            text       = "Guía del ayuno",
+            style      = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
@@ -562,7 +481,6 @@ fun KnowledgeBaseScreen(onBack: () -> Unit) {
             PhaseGuideCard(phase = phase)
         }
 
-        // General considerations
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape    = MaterialTheme.shapes.large,
@@ -610,7 +528,6 @@ fun PhaseGuideCard(phase: FastingPhase) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Header
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -628,13 +545,11 @@ fun PhaseGuideCard(phase: FastingPhase) {
                 )
             }
 
-            // Description
             Text(
                 text  = phase.description,
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            // Benefits
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text       = "✦ Beneficios",
@@ -643,14 +558,10 @@ fun PhaseGuideCard(phase: FastingPhase) {
                     fontWeight = FontWeight.SemiBold
                 )
                 phase.benefits.forEach { b ->
-                    Text(
-                        text  = "• $b",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text(text = "• $b", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
-            // Cautions
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text       = "⚠ Precauciones",
@@ -659,14 +570,10 @@ fun PhaseGuideCard(phase: FastingPhase) {
                     fontWeight = FontWeight.SemiBold
                 )
                 phase.cautions.forEach { c ->
-                    Text(
-                        text  = "• $c",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text(text = "• $c", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
-            // Hunger
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Row(
                 verticalAlignment     = Alignment.CenterVertically,
@@ -684,24 +591,20 @@ fun PhaseGuideCard(phase: FastingPhase) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// StatsRow — racha, completados, promedio
+// StatsRow
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun StatsRow(key: Int, storage: FastingStorage) {
-    val history = remember(key) { storage.getHistory() }
-
-    // Completed sessions only
+    val history   = remember(key) { storage.getHistory() }
     val completed = history.filter { it.completed }
 
-    // Current streak: consecutive days ending today with a completed session
     val streak = remember(key) {
         if (completed.isEmpty()) return@remember 0
-        val calendar = java.util.Calendar.getInstance()
+        val calendar    = java.util.Calendar.getInstance()
         var streakCount = 0
-        var checkDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
-        val year = calendar.get(java.util.Calendar.YEAR)
-
+        var checkDay    = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+        val year        = calendar.get(java.util.Calendar.YEAR)
         for (session in completed) {
             val cal = java.util.Calendar.getInstance()
             cal.timeInMillis = session.startTime
@@ -715,12 +618,9 @@ fun StatsRow(key: Int, storage: FastingStorage) {
         streakCount
     }
 
-    // Average duration in hours
     val avgHours = remember(key) {
         if (completed.isEmpty()) return@remember 0.0
-        val totalMs = completed.sumOf {
-            (it.endTime ?: it.startTime) - it.startTime
-        }
+        val totalMs = completed.sumOf { (it.endTime ?: it.startTime) - it.startTime }
         totalMs.toDouble() / completed.size / 3_600_000.0
     }
 
@@ -763,7 +663,7 @@ fun StatCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier            = Modifier
+            modifier = Modifier
                 .padding(vertical = 16.dp, horizontal = 8.dp)
                 .fillMaxWidth()
                 .heightIn(min = 100.dp),
@@ -778,11 +678,11 @@ fun StatCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text      = value,
-                style     = MaterialTheme.typography.titleLarge,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier  = Modifier.fillMaxWidth()
+                text       = value,
+                style      = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                textAlign  = TextAlign.Center,
+                modifier   = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
