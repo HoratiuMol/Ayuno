@@ -55,6 +55,14 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.min
 import com.moldovan.ayuno.data.ThemeMode
+import com.moldovan.ayuno.data.FastingSession
+//para areglar las invocaciones de botones
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FastingRing — per-phase ring with countdown
@@ -778,4 +786,108 @@ private fun ThemeOption(
             )
         }
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FastingCompletedDialog — B13
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun FastingCompletedDialog(
+    session: FastingSession,
+    onShare: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val durationMs  = (session.endTime ?: System.currentTimeMillis()) - session.startTime
+    val durationH   = durationMs / 3_600_000
+    val durationMin = (durationMs % 3_600_000) / 60_000
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text      = "🎉 ¡Ayuno completado!",
+                    style     = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Duración
+                Text(
+                    text      = "${durationH}h ${"%02d".format(durationMin)}m",
+                    style     = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color     = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier  = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text      = "Objetivo de ${session.goalHours}h completado",
+                    style     = MaterialTheme.typography.bodyMedium,
+                    color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                if (session.completedPhases.isNotEmpty()) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text       = "Fases superadas",
+                            style      = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color      = MaterialTheme.colorScheme.primary
+                        )
+                        session.completedPhases.forEach { phase ->
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment     = Alignment.CenterVertically
+                            ) {
+                                androidx.compose.material3.Icon(
+                                    imageVector        = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint               = MaterialTheme.colorScheme.primary,
+                                    modifier           = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text  = phase,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onShare,
+                shape   = MaterialTheme.shapes.extraLarge
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector        = Icons.Default.Share,
+                    contentDescription = null,
+                    modifier           = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Compartir")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
 }
