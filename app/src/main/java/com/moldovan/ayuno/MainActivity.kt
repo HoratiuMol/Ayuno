@@ -20,6 +20,10 @@ import com.moldovan.ayuno.data.FastingSession
 import com.moldovan.ayuno.data.FastingStorage
 import com.moldovan.ayuno.data.ThemePreference
 import com.moldovan.ayuno.data.ThemeMode
+//añadidos tras implementar compartir
+import androidx.compose.ui.platform.LocalContext
+import com.moldovan.ayuno.data.ShareHelper
+import android.content.Intent
 
 //añadido imports tras implementar notificaiones
 import android.os.Build
@@ -64,6 +68,9 @@ fun AyunoApp(
     var showKnowledge   by remember { mutableStateOf(false) }
     var showStartDialog by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
+    //añadidos tras compartir
+    var showCompletedDialog    by remember { mutableStateOf(false) }
+    var lastCompletedSession   by remember { mutableStateOf<FastingSession?>(null) }
 
     if (showThemePicker) {
         ThemePickerDialog(
@@ -80,6 +87,21 @@ fun AyunoApp(
                 val adjustedStart = System.currentTimeMillis() - (offsetHours * 3_600_000f).toLong()
                 activeSession = storage.startSession(goalHours, adjustedStart)
                 showStartDialog = false
+            }
+        )
+    }
+    val context = LocalContext.current
+
+    if (showCompletedDialog && lastCompletedSession != null) {
+        FastingCompletedDialog(
+            session   = lastCompletedSession!!,
+            onShare   = {
+                val intent = ShareHelper.createShareIntent(context, lastCompletedSession!!)
+                context.startActivity(Intent.createChooser(intent, "Compartir ayuno"))
+            },
+            onDismiss = {
+                showCompletedDialog  = false
+                lastCompletedSession = null
             }
         )
     }
@@ -194,11 +216,14 @@ fun AyunoApp(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
+                        //remplazado al comparitr
                         Button(
                             onClick = {
-                                storage.endSession()
+                                val completed = storage.endSession()   // ahora devuelve FastingSession?
+                                lastCompletedSession = completed
                                 activeSession = null
                                 historyKey++
+                                if (completed != null) showCompletedDialog = true
                             },
                             shape = MaterialTheme.shapes.extraLarge
                         ) {

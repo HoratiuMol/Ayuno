@@ -43,18 +43,20 @@ class FastingStorage(context: Context) {
         return session
     }
 
-    fun endSession() {
-        val active = getActiveSession() ?: return
+    //devuelve fastingSession para mostrar diálogo
+    fun endSession(): FastingSession? {
+        val active = getActiveSession() ?: return null
         val elapsedHours = (System.currentTimeMillis() - active.startTime) / 3_600_000f
         val phases = FASTING_PHASES.filter { it.startHour < elapsedHours }.map { it.name }
         val finished = active.copy(
-            endTime = System.currentTimeMillis(),
-            completed = true,
-            completedPhases = phases
+            endTime          = System.currentTimeMillis(),
+            completed        = true,
+            completedPhases  = phases
         )
         saveToHistory(finished)
         cancelPhaseNotifications()
         prefs.edit().remove(KEY_ACTIVE).apply()
+        return finished
     }
 
     fun cancelSession() {
