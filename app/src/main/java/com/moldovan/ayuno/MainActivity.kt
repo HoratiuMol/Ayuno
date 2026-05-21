@@ -18,6 +18,8 @@ import java.util.Calendar
 import com.moldovan.ayuno.ui.theme.AyunoTheme
 import com.moldovan.ayuno.data.FastingSession
 import com.moldovan.ayuno.data.FastingStorage
+import com.moldovan.ayuno.data.ThemePreference
+import com.moldovan.ayuno.data.ThemeMode
 
 //añadido imports tras implementar notificaiones
 import android.os.Build
@@ -27,14 +29,23 @@ import com.moldovan.ayuno.data.FASTING_PHASES
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val storage = FastingStorage(this)
+        val storage         = FastingStorage(this)
+        val themePreference = ThemePreference(this)
         NotificationHelper.createChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
         }
         setContent {
-            AyunoTheme {
-                AyunoApp(storage = storage)
+            var themeMode by remember { mutableStateOf(themePreference.getThemeMode()) }
+            AyunoTheme(themeMode = themeMode) {
+                AyunoApp(
+                    storage       = storage,
+                    themeMode     = themeMode,
+                    onThemeChange = { selected ->
+                        themePreference.setThemeMode(selected)
+                        themeMode = selected
+                    }
+                )
             }
         }
     }
@@ -42,15 +53,26 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AyunoApp(storage: FastingStorage) {
-    var activeSession by remember { mutableStateOf<FastingSession?>(storage.getActiveSession()) }
-    var goalHours by remember { mutableIntStateOf(16) }
-    var historyKey by remember { mutableIntStateOf(0) }
-    var showKnowledge by remember { mutableStateOf(false) }
-    // NUEVO: controla si se muestra el diálogo de "ya llevo horas"
+fun AyunoApp(
+    storage: FastingStorage,
+    themeMode: ThemeMode,
+    onThemeChange: (ThemeMode) -> Unit
+) {
+    var activeSession   by remember { mutableStateOf<FastingSession?>(storage.getActiveSession()) }
+    var goalHours       by remember { mutableIntStateOf(16) }
+    var historyKey      by remember { mutableIntStateOf(0) }
+    var showKnowledge   by remember { mutableStateOf(false) }
     var showStartDialog by remember { mutableStateOf(false) }
+    var showThemePicker by remember { mutableStateOf(false) }
 
-    // NUEVO: diálogo para indicar horas transcurridas desde última ingesta
+    if (showThemePicker) {
+        ThemePickerDialog(
+            currentMode = themeMode,
+            onSelect    = { onThemeChange(it); showThemePicker = false },
+            onDismiss   = { showThemePicker = false }
+        )
+    }
+
     if (showStartDialog) {
         StartFastingDialog(
             onDismiss = { showStartDialog = false },
@@ -71,23 +93,21 @@ fun AyunoApp(storage: FastingStorage) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.EmojiFoodBeverage,
+                            imageVector        = Icons.Default.EmojiFoodBeverage,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint               = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Ayuno",
+                            text  = "Ayuno",
                             style = MaterialTheme.typography.headlineMedium
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        // Handle sign out - implement AuthViewModel for full auth
-                    }) {
+                    IconButton(onClick = { showThemePicker = true }) {
                         Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = "Cerrar sesión"
+                            imageVector        = Icons.Default.Palette,
+                            contentDescription = "Cambiar tema"
                         )
                     }
                 },
@@ -100,15 +120,15 @@ fun AyunoApp(storage: FastingStorage) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues)        // ← aquí se usa paddingValues
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Gestiona tu ayuno intermitente",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text     = "Gestiona tu ayuno intermitente",
+                style    = MaterialTheme.typography.bodySmall,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -118,99 +138,61 @@ fun AyunoApp(storage: FastingStorage) {
                 }
 
                 activeSession == null -> {
-                    // Daily motivational quote
                     DailyQuoteCard()
-
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Goal Selector
                     GoalSelectorSection(
                         selectedGoal = goalHours,
-                        onSelect = { goalHours = it }
+                        onSelect     = { goalHours = it }
                     )
-
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Botón 1: Comenzar ahora
                     Button(
-                        onClick = {
-                            activeSession = storage.startSession(goalHours)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = MaterialTheme.shapes.extraLarge
+                        onClick = { activeSession = storage.startSession(goalHours) },
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape    = MaterialTheme.shapes.extraLarge
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Comenzar ayuno", style = MaterialTheme.typography.bodyLarge)
                     }
-
                     Spacer(modifier = Modifier.height(10.dp))
-
-                    // NUEVO — Botón 2: Ya llevo horas en ayuno
                     OutlinedButton(
-                        onClick = { showStartDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = MaterialTheme.shapes.extraLarge
+                        onClick  = { showStartDialog = true },
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape    = MaterialTheme.shapes.extraLarge
                     ) {
                         Icon(Icons.Default.Schedule, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Ya llevo horas en ayuno", style = MaterialTheme.typography.bodyLarge)
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    TextButton(
-                        onClick = { showKnowledge = true }
-                    ) {
+                    TextButton(onClick = { showKnowledge = true }) {
                         Icon(
                             Icons.Default.MenuOpen,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Guía del ayuno",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // Stats row
                     StatsRow(key = historyKey, storage = storage)
-
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // Medical disclaimer
                     MedicalDisclaimerCard()
-
                     Spacer(modifier = Modifier.height(32.dp))
-
-                    // History
                     FastingHistorySection(key = historyKey, storage = storage)
                 }
 
                 else -> {
                     val session = activeSession!!
-
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // Fasting Ring
                     FastingRingView(
                         startTime = session.startTime,
                         goalHours = session.goalHours
                     )
-
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Action Buttons
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
                         Button(
                             onClick = {
@@ -224,7 +206,6 @@ fun AyunoApp(storage: FastingStorage) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("He comido")
                         }
-
                         OutlinedButton(
                             onClick = {
                                 storage.cancelSession()
@@ -237,8 +218,6 @@ fun AyunoApp(storage: FastingStorage) {
                             Text("Cancelar")
                         }
                     }
-
-                    // Guide button during active fasting
                     TextButton(onClick = { showKnowledge = true }) {
                         Icon(
                             Icons.Default.MenuOpen,
@@ -248,17 +227,14 @@ fun AyunoApp(storage: FastingStorage) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Phase Info Card
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large
+                        shape    = MaterialTheme.shapes.large
                     ) {
                         PhaseInfoSection(
                             startTime = session.startTime,
-                            modifier = Modifier.padding(20.dp)
+                            modifier  = Modifier.padding(20.dp)
                         )
                     }
                 }

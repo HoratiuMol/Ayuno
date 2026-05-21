@@ -54,6 +54,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.min
+import com.moldovan.ayuno.data.ThemeMode
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FastingRing — per-phase ring with countdown
@@ -692,6 +693,88 @@ fun StatCard(
                 textAlign = TextAlign.Center,
                 modifier  = Modifier.fillMaxWidth(),
                 minLines  = 2
+            )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ThemePickerDialog — B12
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun ThemePickerDialog(
+    currentMode: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Apariencia") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                ThemeOption(
+                    label    = "Claro",
+                    emoji    = "☀️",
+                    selected = currentMode == ThemeMode.LIGHT,
+                    onClick  = { onSelect(ThemeMode.LIGHT) }
+                )
+                ThemeOption(
+                    label    = "Oscuro",
+                    emoji    = "🌙",
+                    selected = currentMode == ThemeMode.DARK,
+                    onClick  = { onSelect(ThemeMode.DARK) }
+                )
+                ThemeOption(
+                    label    = "Seguir sistema",
+                    emoji    = "📱",
+                    selected = currentMode == ThemeMode.SYSTEM,
+                    onClick  = { onSelect(ThemeMode.SYSTEM) }
+                )
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
+}
+
+@Composable
+private fun ThemeOption(
+    label: String,
+    emoji: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer
+                else androidx.compose.ui.graphics.Color.Transparent
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(text = emoji, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text  = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSurface
+        )
+        if (selected) {
+            Spacer(modifier = Modifier.weight(1f))
+            androidx.compose.material3.Icon(
+                imageVector        = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint               = MaterialTheme.colorScheme.primary,
+                modifier           = Modifier.size(18.dp)
             )
         }
     }
