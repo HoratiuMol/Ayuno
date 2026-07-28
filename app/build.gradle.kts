@@ -8,14 +8,15 @@ android {
 
 
     namespace = "com.moldovan.ayuno"
-    compileSdk = 35
+    compileSdk = 36
+    compileSdkMinor = 1
 
     defaultConfig {
         applicationId = "com.moldovan.ayuno"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 2
-        versionName = "1.2"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,5 +63,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 }
