@@ -29,22 +29,44 @@ import android.content.Intent
 import android.os.Build
 import com.moldovan.ayuno.data.NotificationHelper
 import com.moldovan.ayuno.data.FASTING_PHASES
+import com.moldovan.ayuno.data.FREE_FASTING_GOAL_HOURS
+import com.moldovan.ayuno.data.WeightStorage
+import com.moldovan.ayuno.data.HydrationStorage
 
 class MainActivity : ComponentActivity() {
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
+            NotificationHelper.markPermissionAsked(this)
+        }
+
+    private fun ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.POST_NOTIFICATIONS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (granted || NotificationHelper.hasAskedForPermission(this)) return
+        NotificationHelper.markPermissionAsked(this)
+        notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val storage         = FastingStorage(this)
-        val themePreference = ThemePreference(this)
+        val storage          = FastingStorage(this)
+        val weightStorage    = WeightStorage(this)
+        val hydrationStorage = HydrationStorage(this)
+        val themePreference  = ThemePreference(this)
         NotificationHelper.createChannel(this)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
-        }
+        ensureNotificationPermission()
+        com.moldovan.ayuno.widget.WidgetTickWorker.start(this)
         setContent {
             var themeMode by remember { mutableStateOf(themePreference.getThemeMode()) }
             AyunoTheme(themeMode = themeMode) {
                 AyunoApp(
-                    storage       = storage,
-                    themeMode     = themeMode,
+                    storage          = storage,
+                    weightStorage    = weightStorage,
+                    hydrationStorage = hydrationStorage,
+                    themeMode        = themeMode,
                     onThemeChange = { selected ->
                         themePreference.setThemeMode(selected)
                         themeMode = selected
@@ -59,13 +81,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AyunoApp(
     storage: FastingStorage,
+    weightStorage: WeightStorage,
+    hydrationStorage: HydrationStorage,
     themeMode: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit
 ) {
     var activeSession   by remember { mutableStateOf<FastingSession?>(storage.getActiveSession()) }
-    var goalHours       by remember { mutableIntStateOf(16) }
     var historyKey      by remember { mutableIntStateOf(0) }
-    var showKnowledge   by remember { mutableStateOf(false) }
+    var showKnowledge    by remember { mutableStateOf(false) }
+    var showWeight       by remember { mutableStateOf(false) }
+    var showPlanPicker   by remember { mutableStateOf(false) }
+    var showAchievements by remember { mutableStateOf(false) }
     var showStartDialog by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
     //añadidos tras compartir
@@ -85,7 +111,7 @@ fun AyunoApp(
             onDismiss = { showStartDialog = false },
             onConfirm = { offsetHours ->
                 val adjustedStart = System.currentTimeMillis() - (offsetHours * 3_600_000f).toLong()
-                activeSession = storage.startSession(goalHours, adjustedStart)
+                activeSession = storage.startSession(FREE_FASTING_GOAL_HOURS, adjustedStart)
                 showStartDialog = false
             }
         )
@@ -126,6 +152,12 @@ fun AyunoApp(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showWeight = true }) {
+                        Icon(
+                            imageVector        = Icons.Default.MonitorWeight,
+                            contentDescription = "Registro de peso"
+                        )
+                    }
                     IconButton(onClick = { showThemePicker = true }) {
                         Icon(
                             imageVector        = Icons.Default.Palette,
@@ -159,22 +191,41 @@ fun AyunoApp(
                     KnowledgeBaseScreen(onBack = { showKnowledge = false })
                 }
 
+                showWeight -> {
+                    WeightScreen(storage = weightStorage, onBack = { showWeight = false })
+                }
+
+                showAchievements -> {
+                    AchievementsScreen(
+                        key     = historyKey,
+                        storage = storage,
+                        onBack  = { showAchievements = false }
+                    )
+                }
+
+                showPlanPicker -> {
+                    PlanPickerScreen(
+                        onSelect = { plan ->
+                            activeSession = storage.startSession(plan.goalHours, planId = plan.id)
+                            showPlanPicker = false
+                        },
+                        onBack = { showPlanPicker = false }
+                    )
+                }
+
                 activeSession == null -> {
                     DailyQuoteCard()
                     Spacer(modifier = Modifier.height(24.dp))
-                    GoalSelectorSection(
-                        selectedGoal = goalHours,
-                        onSelect     = { goalHours = it }
-                    )
+                    PlanEntryCard(onClick = { showPlanPicker = true })
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { activeSession = storage.startSession(goalHours) },
+                        onClick = { activeSession = storage.startSession(FREE_FASTING_GOAL_HOURS) },
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape    = MaterialTheme.shapes.extraLarge
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Comenzar ayuno", style = MaterialTheme.typography.bodyLarge)
+                        Text("Comenzar ayuno libre", style = MaterialTheme.typography.bodyLarge)
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedButton(
@@ -187,17 +238,32 @@ fun AyunoApp(
                         Text("Ya llevo horas en ayuno", style = MaterialTheme.typography.bodyLarge)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    TextButton(onClick = { showKnowledge = true }) {
-                        Icon(
-                            Icons.Default.MenuOpen,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(onClick = { showKnowledge = true }) {
+                            Icon(
+                                Icons.Default.MenuOpen,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        TextButton(onClick = { showAchievements = true }) {
+                            Icon(
+                                Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Logros", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     StatsRow(key = historyKey, storage = storage)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    StreakStrip(key = historyKey, storage = storage, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ProgressChartSection(key = historyKey, storage = storage)
                     Spacer(modifier = Modifier.height(8.dp))
                     MedicalDisclaimerCard()
                     Spacer(modifier = Modifier.height(32.dp))
@@ -252,7 +318,9 @@ fun AyunoApp(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HydrationSection(storage = hydrationStorage, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(16.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape    = MaterialTheme.shapes.large

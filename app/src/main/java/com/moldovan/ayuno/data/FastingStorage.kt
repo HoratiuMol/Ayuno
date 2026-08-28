@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.moldovan.ayuno.widget.WidgetTickWorker
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
@@ -15,7 +16,8 @@ data class FastingSession(
     val endTime: Long? = null,
     val goalHours: Int,
     val completed: Boolean = false,
-    val completedPhases: List<String> = emptyList()
+    val completedPhases: List<String> = emptyList(),
+    val planId: String? = null
 )
 
 class FastingStorage(context: Context) {
@@ -31,15 +33,18 @@ class FastingStorage(context: Context) {
 
     fun startSession(
         goalHours: Int,
-        startTime: Long = System.currentTimeMillis()
+        startTime: Long = System.currentTimeMillis(),
+        planId: String? = null
     ): FastingSession {
         val session = FastingSession(
             id = System.currentTimeMillis().toString(),
             startTime = startTime,
-            goalHours = goalHours
+            goalHours = goalHours,
+            planId = planId
         )
         prefs.edit().putString(KEY_ACTIVE, session.toJson().toString()).apply()
         schedulePhaseNotifications(startTime, goalHours)
+        WidgetTickWorker.start(context)
         return session
     }
 
@@ -56,6 +61,7 @@ class FastingStorage(context: Context) {
         saveToHistory(finished)
         cancelPhaseNotifications()
         prefs.edit().remove(KEY_ACTIVE).apply()
+        WidgetTickWorker.stop(context)
         return finished
     }
 
@@ -71,6 +77,7 @@ class FastingStorage(context: Context) {
         saveToHistory(cancelled)
         cancelPhaseNotifications()
         prefs.edit().remove(KEY_ACTIVE).apply()
+        WidgetTickWorker.stop(context)
     }
 
     fun getHistory(): List<FastingSession> {
@@ -129,6 +136,7 @@ class FastingStorage(context: Context) {
         put("goalHours", goalHours)
         put("completed", completed)
         put("completedPhases", JSONArray(completedPhases))
+        planId?.let { put("planId", it) }
     }
 
     private fun sessionFromJson(o: JSONObject) = FastingSession(
@@ -140,7 +148,8 @@ class FastingStorage(context: Context) {
         completedPhases = runCatching {
             val arr = o.getJSONArray("completedPhases")
             (0 until arr.length()).map { arr.getString(it) }
-        }.getOrDefault(emptyList())
+        }.getOrDefault(emptyList()),
+        planId = if (o.has("planId")) o.getString("planId") else null
     )
 
     companion object {
@@ -148,4 +157,25 @@ class FastingStorage(context: Context) {
         private const val KEY_HISTORY  = "fasting_history"
         private const val NOTIF_BASE_ID = 1000
     }
+}
+
+/** Días consecutivos (incluyendo hoy) con al menos un ayuno completado. */
+fun computeFastingStreak(history: List<FastingSession>): Int {
+    val completed = history.filter { it.completed }
+    if (completed.isEmpty()) return 0
+    val calendar = java.util.Calendar.getInstance()
+    var streakCount = 0
+    var checkDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+    val year = calendar.get(java.util.Calendar.YEAR)
+    for (session in completed) {
+        val cal = java.util.Calendar.getInstance()
+        cal.timeInMillis = session.startTime
+        val sessionDay = cal.get(java.util.Calendar.DAY_OF_YEAR)
+        val sessionYear = cal.get(java.util.Calendar.YEAR)
+        if (sessionYear == year && sessionDay == checkDay) {
+            streakCount++
+            checkDay--
+        } else break
+    }
+    return streakCount
 }

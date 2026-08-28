@@ -12,6 +12,17 @@ import com.moldovan.ayuno.MainActivity
 object NotificationHelper {
 
     const val CHANNEL_ID = "ayuno_phases"
+    private const val KEY_PERMISSION_ASKED = "notification_permission_asked"
+
+    /** Evita volver a pedir el permiso de notificaciones en cada arranque de la app. */
+    fun hasAskedForPermission(context: Context): Boolean =
+        context.getSharedPreferences("ayuno_prefs", Context.MODE_PRIVATE)
+            .getBoolean(KEY_PERMISSION_ASKED, false)
+
+    fun markPermissionAsked(context: Context) {
+        context.getSharedPreferences("ayuno_prefs", Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_PERMISSION_ASKED, true).apply()
+    }
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
