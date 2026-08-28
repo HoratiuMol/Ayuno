@@ -6,6 +6,37 @@ con Claude Code).
 
 Leyenda: ⬜ pendiente · 🔄 en curso · ✅ hecho · ⏸️ pausado a propósito
 
+## ⚙️ Infraestructura de build — a tener en cuenta antes de tocar Gradle
+
+Estado tras el arreglo del 2026-08-28. **No volver al stack experimental.**
+
+- **Stack fijado:** AGP 8.13.0 · Gradle 8.14.3 · Kotlin 2.1.20 · Java 17.
+  Estas versiones van juntas; si se sube una, verificar la matriz de
+  compatibilidad AGP↔Gradle↔Kotlin antes de commitear.
+- **NO subir a AGP 9.x** por ahora: AGP 9 integra el soporte de Kotlin en el
+  propio plugin y entra en conflicto con `org.jetbrains.kotlin.android`
+  (`Cannot add extension with name 'kotlin'`), además de que el soporte del
+  IDE aún es inmaduro (síntoma: sync roto → "todo el código en rojo").
+- **`gradle.properties` debe quedarse mínimo** (solo `org.gradle.jvmargs`,
+  `android.useAndroidX`, `kotlin.code.style`, `android.nonTransitiveRClass`).
+  No re-añadir flags como `android.builtInKotlin`, `android.newDsl`,
+  `android.enableAppCompileTimeRClass`, `android.r8.*`, etc.: rompen el build
+  con AGP 8.x (`compileDebugJavaWithJavac ... has no value available`).
+- **No versionar** `gradle/gradle-daemon-jvm.properties` (feature incubando).
+- **API 36:** `compileSdk = 36` + `compileSdkMinor = 1` en
+  `app/build.gradle.kts`. El `compileSdkMinor` es un **workaround temporal**:
+  la plataforma local `platforms/android-36` está incompleta (faltan
+  `android.jar` y `core-for-system-modules.jar`, probablemente cuarentena del
+  antivirus corporativo); solo `android-36.1` está íntegra. Cuando se
+  reinstale "Android SDK Platform 36" desde el SDK Manager (y se excluya la
+  carpeta del SDK en el antivirus), se puede borrar `compileSdkMinor`.
+- **Java 17** es obligatorio (Kotlin 2.x + AGP 8.13). El Gradle JDK de Android
+  Studio debe apuntar a un JDK 17+ (el JBR incluido, "jbr-21", sirve).
+- `kotlinOptions { }` está migrado a `kotlin { compilerOptions { } }`; usar
+  esa DSL para cualquier opción nueva del compilador.
+- Dependencias en el version catalog (`gradle/libs.versions.toml`), no como
+  strings sueltos en `dependencies { }`.
+
 ## Funcionalidades core de ayuno
 
 - [x] ✅ 1. Planes de ayuno con nombre y metodología (16:8, 18:6, 20:4, OMAD,
@@ -94,6 +125,21 @@ Leyenda: ⬜ pendiente · 🔄 en curso · ✅ hecho · ⏸️ pausado a propós
   confirmar). El botón "Comenzar ayuno" pasa a llamarse "Comenzar ayuno
   libre" y ya no depende de ningún plan preseleccionado. Verificado con
   `assembleDebug`.
+- 2026-08-28: Arreglo de infraestructura de build. El proyecto estaba en un
+  stack experimental inestable (AGP 9.0.1 + Gradle 9.2.1 + ~10 flags
+  experimentales en `gradle.properties` + `gradle-daemon-jvm.properties`),
+  lo que rompía el sync de Gradle en Android Studio ("todo el código en
+  rojo") y un build limpio. Además, la plataforma `platforms/android-36` del
+  SDK está incompleta (faltan `android.jar` y `core-for-system-modules.jar`;
+  probablemente cuarentena del antivirus corporativo). Cambios:
+  AGP 8.13.0, Gradle 8.14.3, Kotlin 2.1.20, Java 17; `compileSdk = 36` con
+  `compileSdkMinor = 1` (usa la plataforma 36.1, que sí está íntegra);
+  `gradle.properties` reducido a lo estándar; eliminado
+  `gradle-daemon-jvm.properties`; `kotlinOptions` migrado a `compilerOptions`;
+  `work-runtime-ktx` movido al version catalog. Verificado con
+  `assembleDebug` (BUILD SUCCESSFUL). Pendiente por parte del usuario:
+  reinstalar "Android SDK Platform 36" desde el SDK Manager (y excluir la
+  carpeta del SDK en el antivirus) para poder quitar `compileSdkMinor`.
 - 2026-08-28: Implementados los puntos 1, 3, 4 y 5 del bloque "motivación y
   retención" (widget, logros, racha visual, fix del permiso de
   notificaciones), cuidando que la pantalla principal no se sobrecargue de
