@@ -32,6 +32,9 @@ import com.moldovan.ayuno.data.FASTING_PHASES
 import com.moldovan.ayuno.data.FREE_FASTING_GOAL_HOURS
 import com.moldovan.ayuno.data.WeightStorage
 import com.moldovan.ayuno.data.HydrationStorage
+import com.moldovan.ayuno.data.computeFastingStreak
+import com.moldovan.ayuno.data.hasCompletedFastToday
+import com.moldovan.ayuno.data.streakMotivation
 
 class MainActivity : ComponentActivity() {
 
@@ -214,7 +217,7 @@ fun AyunoApp(
                 }
 
                 activeSession == null -> {
-                    DailyQuoteCard()
+                    MotivationCard(key = historyKey, storage = storage)
                     Spacer(modifier = Modifier.height(24.dp))
                     PlanEntryCard(onClick = { showPlanPicker = true })
                     Spacer(modifier = Modifier.height(24.dp))
@@ -471,7 +474,8 @@ fun MedicalDisclaimerCard() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Daily motivational quote — rotates by day of year
+// Tarjeta motivacional de la pantalla de inicio: mensaje contextual de racha
+// (streakMotivation) si aplica; si no, la cita diaria que rota por día del año.
 // ─────────────────────────────────────────────────────────────────────────────
 
 private data class Quote(val text: String, val author: String)
@@ -495,7 +499,15 @@ private val QUOTES = listOf(
 )
 
 @Composable
-fun DailyQuoteCard() {
+fun MotivationCard(key: Int, storage: FastingStorage) {
+    val history        = remember(key) { storage.getHistory() }
+    val contextualMsg  = remember(history) {
+        streakMotivation(
+            streak         = computeFastingStreak(history),
+            completedToday = hasCompletedFastToday(history),
+            hasHistory     = history.isNotEmpty()
+        )
+    }
     val quote = remember {
         val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         QUOTES[dayOfYear % QUOTES.size]
@@ -508,19 +520,21 @@ fun DailyQuoteCard() {
             .padding(horizontal = 8.dp)
     ) {
         Text(
-            text      = "\"${quote.text}\"",
+            text      = "\"${contextualMsg ?: quote.text}\"",
             style     = MaterialTheme.typography.bodyMedium.copy(
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             ),
             color     = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text      = "— ${quote.author}",
-            style     = MaterialTheme.typography.labelSmall,
-            color     = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
+        if (contextualMsg == null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text      = "— ${quote.author}",
+                style     = MaterialTheme.typography.labelSmall,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }

@@ -159,6 +159,17 @@ class FastingStorage(context: Context) {
     }
 }
 
+/** True si hoy ya se ha completado al menos un ayuno. */
+fun hasCompletedFastToday(history: List<FastingSession>): Boolean {
+    val today = java.util.Calendar.getInstance()
+    val todayKey = today.get(java.util.Calendar.YEAR) * 1000 + today.get(java.util.Calendar.DAY_OF_YEAR)
+    return history.any { session ->
+        if (!session.completed) return@any false
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = session.startTime }
+        cal.get(java.util.Calendar.YEAR) * 1000 + cal.get(java.util.Calendar.DAY_OF_YEAR) == todayKey
+    }
+}
+
 /** Días consecutivos (incluyendo hoy) con al menos un ayuno completado. */
 fun computeFastingStreak(history: List<FastingSession>): Int {
     val completed = history.filter { it.completed }

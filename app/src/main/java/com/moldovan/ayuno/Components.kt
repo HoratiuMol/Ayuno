@@ -55,6 +55,7 @@ import com.moldovan.ayuno.data.FastingPlan
 import com.moldovan.ayuno.data.FastingStorage
 import com.moldovan.ayuno.data.fastingPlanById
 import com.moldovan.ayuno.data.computeFastingStreak
+import com.moldovan.ayuno.data.fastingMotivation
 import com.moldovan.ayuno.data.computeAchievements
 import com.moldovan.ayuno.data.AchievementProgress
 import com.moldovan.ayuno.data.WeightEntry
@@ -176,7 +177,12 @@ fun FastingRingView(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text      = currentPhase.motivation,
+                    text      = fastingMotivation(
+                        currentPhase       = currentPhase,
+                        nextPhase          = nextPhase,
+                        elapsedHours       = elapsedHours,
+                        minutesToNextPhase = if (nextPhase != null) remainingMs / 60_000 else null
+                    ),
                     style     = MaterialTheme.typography.labelSmall,
                     color     = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines  = 2,

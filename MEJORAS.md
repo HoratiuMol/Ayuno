@@ -106,7 +106,17 @@ Estado tras el arreglo del 2026-08-28. **No volver al stack experimental.**
       `markPermissionAsked` en `data/NotificationHelper.kt`), en vez de
       en cada arranque.
 - [ ] ⬜ 6. Onboarding inicial (2-3 pantallas).
-- [ ] ⬜ 7. Frases motivacionales contextuales por fase.
+- [x] ✅ 7. Frases motivacionales contextuales por fase.
+      → `data/ContextualMessages.kt` (nuevo): pools de 4 frases por cada
+      fase + `fastingMotivation()` (elige por fase y horas transcurridas, y
+      avisa "Casi en «siguiente fase»" cuando falta <1 h) y
+      `streakMotivation()` (mensajes según racha: primer ayuno, racha en
+      riesgo, racha asegurada hoy…). El anillo (`FastingRingView` en
+      `Components.kt`) usa `fastingMotivation` en vez del campo fijo
+      `FastingPhase.motivation`. `DailyQuoteCard` pasa a `MotivationCard`
+      (`MainActivity.kt`): muestra el mensaje de racha si aplica y, si no,
+      la cita diaria de siempre. Helper `hasCompletedFastToday()` añadido en
+      `data/FastingStorage.kt`.
 
 ## Historial de cambios
 
@@ -147,3 +157,16 @@ Estado tras el arreglo del 2026-08-28. **No volver al stack experimental.**
   del ayuno") y una franja compacta de racha, sin tocar la barra superior.
   Verificado con `assembleDebug` sin errores. Pendientes: recordatorios
   personalizables (2), onboarding (6) y frases contextuales por fase (7).
+- 2026-08-31: Rediseño del widget: fondo verde del tema oscuro (SurfaceDark2)
+  para mejor contraste, y botones "Líquidos" (+250 ml) y "Finalizar" bajo el
+  nombre del plan. → `widget/FastingWidgetProvider.kt`,
+  `res/layout/widget_fasting.xml`, `res/values/colors.xml`,
+  `res/drawable/widget_button_background.xml` (nuevo).
+- 2026-08-31: Implementado el punto 7 de "motivación y retención" (frases
+  motivacionales contextuales). El anillo muestra frases que varían por fase
+  y horas transcurridas, con aviso al acercarse a la siguiente fase; la
+  tarjeta de inicio muestra mensajes según el estado de la racha antes de
+  caer a la cita diaria. → `data/ContextualMessages.kt` (nuevo),
+  `data/FastingStorage.kt`, `Components.kt`, `MainActivity.kt`. Verificado
+  con `assembleDebug` sin errores. Pendientes: recordatorios (2),
+  onboarding (6).
