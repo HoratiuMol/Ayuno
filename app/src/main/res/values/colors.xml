@@ -8,9 +8,12 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="widget_background">#FFF5F0E8</color>
-    <color name="widget_accent">#FF8FBF9F</color>
-    <color name="widget_accent_track">#FFE3DDCF</color>
-    <color name="widget_text">#FF2D4A3E</color>
-    <color name="widget_text_muted">#998FBF9F</color>
+    <!-- Fondo verde del tema oscuro de la app (SurfaceDark2) -->
+    <color name="widget_background">#FF1A2E25</color>
+    <color name="widget_accent">#FFA8D4B5</color>
+    <color name="widget_accent_track">#33F5F0E8</color>
+    <color name="widget_text">#FFF5F0E8</color>
+    <color name="widget_text_muted">#B3F5F0E8</color>
+    <color name="widget_button">#1FF5F0E8</color>
+    <color name="widget_button_stroke">#4DA8D4B5</color>
 </resources>
