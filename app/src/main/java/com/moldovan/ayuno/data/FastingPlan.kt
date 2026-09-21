@@ -1,93 +1,96 @@
 package com.moldovan.ayuno.data
 
-enum class FastingDifficulty(val label: String) {
-    PRINCIPIANTE("Principiante"),
-    INTERMEDIO("Intermedio"),
-    AVANZADO("Avanzado")
+import androidx.annotation.StringRes
+import com.moldovan.ayuno.R
+
+enum class FastingDifficulty(@StringRes val labelRes: Int) {
+    PRINCIPIANTE(R.string.difficulty_beginner),
+    INTERMEDIO(R.string.difficulty_intermediate),
+    AVANZADO(R.string.difficulty_advanced)
 }
 
 data class FastingPlan(
     val id: String,
-    val name: String,
-    val subtitle: String,
+    @StringRes val nameRes: Int,
+    @StringRes val subtitleRes: Int,
     val goalHours: Int,
-    val description: String,
+    @StringRes val descriptionRes: Int,
     val difficulty: FastingDifficulty,
-    val schedule: String
+    @StringRes val scheduleRes: Int
 )
 
 val FASTING_PLANS = listOf(
     FastingPlan(
-        id          = "12_12",
-        name        = "12:12",
-        subtitle    = "Iniciación",
-        goalHours   = 12,
-        description = "Un ayuno suave de 12 horas, ideal para empezar a familiarizarte con el ayuno intermitente sin apenas esfuerzo.",
-        difficulty  = FastingDifficulty.PRINCIPIANTE,
-        schedule    = "Ej.: cena a las 20:00, desayuno a las 08:00"
+        id             = "12_12",
+        nameRes        = R.string.plan_12_12_name,
+        subtitleRes    = R.string.plan_12_12_subtitle,
+        goalHours      = 12,
+        descriptionRes = R.string.plan_12_12_desc,
+        difficulty     = FastingDifficulty.PRINCIPIANTE,
+        scheduleRes    = R.string.plan_12_12_schedule
     ),
     FastingPlan(
-        id          = "14_10",
-        name        = "14:10",
-        subtitle    = "Progresión",
-        goalHours   = 14,
-        description = "Amplía ligeramente la ventana de ayuno mientras tu cuerpo se adapta al método.",
-        difficulty  = FastingDifficulty.PRINCIPIANTE,
-        schedule    = "Ej.: cena a las 20:00, desayuno a las 10:00"
+        id             = "14_10",
+        nameRes        = R.string.plan_14_10_name,
+        subtitleRes    = R.string.plan_14_10_subtitle,
+        goalHours      = 14,
+        descriptionRes = R.string.plan_14_10_desc,
+        difficulty     = FastingDifficulty.PRINCIPIANTE,
+        scheduleRes    = R.string.plan_14_10_schedule
     ),
     FastingPlan(
-        id          = "16_8",
-        name        = "16:8",
-        subtitle    = "Leangains",
-        goalHours   = 16,
-        description = "El método de ayuno intermitente más popular: 16 horas de ayuno y una ventana de 8 horas para comer.",
-        difficulty  = FastingDifficulty.INTERMEDIO,
-        schedule    = "Ej.: cena a las 20:00, comida a las 12:00"
+        id             = "16_8",
+        nameRes        = R.string.plan_16_8_name,
+        subtitleRes    = R.string.plan_16_8_subtitle,
+        goalHours      = 16,
+        descriptionRes = R.string.plan_16_8_desc,
+        difficulty     = FastingDifficulty.INTERMEDIO,
+        scheduleRes    = R.string.plan_16_8_schedule
     ),
     FastingPlan(
-        id          = "18_6",
-        name        = "18:6",
-        subtitle    = "Ventana reducida",
-        goalHours   = 18,
-        description = "Reduce la ventana de alimentación a 6 horas para profundizar en los beneficios metabólicos del ayuno.",
-        difficulty  = FastingDifficulty.INTERMEDIO,
-        schedule    = "Ej.: cena a las 18:00, comida a las 12:00"
+        id             = "18_6",
+        nameRes        = R.string.plan_18_6_name,
+        subtitleRes    = R.string.plan_18_6_subtitle,
+        goalHours      = 18,
+        descriptionRes = R.string.plan_18_6_desc,
+        difficulty     = FastingDifficulty.INTERMEDIO,
+        scheduleRes    = R.string.plan_18_6_schedule
     ),
     FastingPlan(
-        id          = "20_4",
-        name        = "20:4",
-        subtitle    = "Warrior Diet",
-        goalHours   = 20,
-        description = "Una única ventana de 4 horas para comer al día; requiere experiencia previa con ayunos más cortos.",
-        difficulty  = FastingDifficulty.AVANZADO,
-        schedule    = "Ej.: una comida principal entre las 16:00 y las 20:00"
+        id             = "20_4",
+        nameRes        = R.string.plan_20_4_name,
+        subtitleRes    = R.string.plan_20_4_subtitle,
+        goalHours      = 20,
+        descriptionRes = R.string.plan_20_4_desc,
+        difficulty     = FastingDifficulty.AVANZADO,
+        scheduleRes    = R.string.plan_20_4_schedule
     ),
     FastingPlan(
-        id          = "omad",
-        name        = "OMAD",
-        subtitle    = "Una comida al día",
-        goalHours   = 23,
-        description = "One Meal A Day: 23 horas de ayuno con una única comida diaria. Máxima simplicidad, requiere experiencia.",
-        difficulty  = FastingDifficulty.AVANZADO,
-        schedule    = "Ej.: una única comida a las 18:00"
+        id             = "omad",
+        nameRes        = R.string.plan_omad_name,
+        subtitleRes    = R.string.plan_omad_subtitle,
+        goalHours      = 23,
+        descriptionRes = R.string.plan_omad_desc,
+        difficulty     = FastingDifficulty.AVANZADO,
+        scheduleRes    = R.string.plan_omad_schedule
     ),
     FastingPlan(
-        id          = "adf",
-        name        = "ADF",
-        subtitle    = "Días alternos",
-        goalHours   = 24,
-        description = "Alternate Day Fasting: ayunos completos de 24 horas en días alternos, combinados con días de alimentación normal.",
-        difficulty  = FastingDifficulty.AVANZADO,
-        schedule    = "Ej.: ayuna un día sí y un día no"
+        id             = "adf",
+        nameRes        = R.string.plan_adf_name,
+        subtitleRes    = R.string.plan_adf_subtitle,
+        goalHours      = 24,
+        descriptionRes = R.string.plan_adf_desc,
+        difficulty     = FastingDifficulty.AVANZADO,
+        scheduleRes    = R.string.plan_adf_schedule
     ),
     FastingPlan(
-        id          = "5_2",
-        name        = "5:2",
-        subtitle    = "Restricción calórica",
-        goalHours   = 24,
-        description = "5 días de alimentación normal y 2 días no consecutivos con ingesta muy reducida. Aquí, cada día de restricción se registra como un ayuno de 24h.",
-        difficulty  = FastingDifficulty.INTERMEDIO,
-        schedule    = "Ej.: restricción los lunes y jueves"
+        id             = "5_2",
+        nameRes        = R.string.plan_5_2_name,
+        subtitleRes    = R.string.plan_5_2_subtitle,
+        goalHours      = 24,
+        descriptionRes = R.string.plan_5_2_desc,
+        difficulty     = FastingDifficulty.INTERMEDIO,
+        scheduleRes    = R.string.plan_5_2_schedule
     )
 )
 
@@ -95,3 +98,9 @@ fun fastingPlanById(id: String?): FastingPlan? = FASTING_PLANS.firstOrNull { it.
 
 /** Objetivo por defecto para un ayuno sin plan asociado ("ayuno libre"). */
 const val FREE_FASTING_GOAL_HOURS = 24
+
+/** True si el plan reserva una ventana de alimentación dentro del mismo día (p. ej. 16:8, OMAD). */
+val FastingPlan.hasEatingWindow: Boolean get() = goalHours < 24
+
+/** Horas de ventana de alimentación tras completar el ayuno, 0 si el plan es de día completo (ADF, 5:2). */
+val FastingPlan.eatingWindowHours: Int get() = (24 - goalHours).coerceAtLeast(0)

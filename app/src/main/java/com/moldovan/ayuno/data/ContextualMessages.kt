@@ -1,5 +1,7 @@
 package com.moldovan.ayuno.data
 
+import android.content.Context
+import com.moldovan.ayuno.R
 import java.util.Calendar
 
 /**
@@ -9,37 +11,37 @@ import java.util.Calendar
  * ya disponibles (fase, horas transcurridas, día del año, racha).
  */
 
-// Varias frases por fase (clave = FastingPhase.name).
-private val PHASE_MESSAGES: Map<String, List<String>> = mapOf(
-    "Fase postprandial" to listOf(
-        "La disciplina empieza cuando terminas de comer.",
-        "El reloj ya corre a tu favor.",
-        "Aún digieres: el ayuno de verdad llega en unas horas.",
-        "Nada que hacer ahora salvo dejar pasar el tiempo."
+// Varias frases por fase (clave = FastingPhase.id).
+private val PHASE_MESSAGES: Map<String, List<Int>> = mapOf(
+    "postprandial" to listOf(
+        R.string.motiv_postprandial_1,
+        R.string.motiv_postprandial_2,
+        R.string.motiv_postprandial_3,
+        R.string.motiv_postprandial_4
     ),
-    "Quema de reservas" to listOf(
-        "Tu cuerpo ya tira de las reservas.",
-        "Cada hora que pasa quemas un poco más de glucógeno.",
-        "El hambre es una ola: sube y luego baja.",
-        "Bebe agua; buena parte del hambre es sed."
+    "glycogen" to listOf(
+        R.string.motiv_glycogen_1,
+        R.string.motiv_glycogen_2,
+        R.string.motiv_glycogen_3,
+        R.string.motiv_glycogen_4
     ),
-    "Cetosis temprana" to listOf(
-        "La incomodidad forja control y claridad.",
-        "Estás entrando en cetosis: la grasa es ahora tu combustible.",
-        "Lo difícil de hoy es la fuerza de mañana.",
-        "Ya has llegado más lejos que la mayoría."
+    "early_ketosis" to listOf(
+        R.string.motiv_early_ketosis_1,
+        R.string.motiv_early_ketosis_2,
+        R.string.motiv_early_ketosis_3,
+        R.string.motiv_early_ketosis_4
     ),
-    "Cetosis profunda" to listOf(
-        "Cetosis plena: la mente se aclara y la grasa arde.",
-        "La autofagia está limpiando tus células ahora mismo.",
-        "A partir de aquí el hambre afloja. Sigue.",
-        "Estás quemando grasa, no fuerza de voluntad."
+    "deep_ketosis" to listOf(
+        R.string.motiv_deep_ketosis_1,
+        R.string.motiv_deep_ketosis_2,
+        R.string.motiv_deep_ketosis_3,
+        R.string.motiv_deep_ketosis_4
     ),
-    "Cetosis extendida" to listOf(
-        "Tu cuerpo se renueva desde dentro.",
-        "Máxima autofagia: territorio de élite.",
-        "Escucha a tu cuerpo y para si algo no va bien.",
-        "El hambre tiende a desaparecer a partir del tercer día."
+    "extended_ketosis" to listOf(
+        R.string.motiv_extended_ketosis_1,
+        R.string.motiv_extended_ketosis_2,
+        R.string.motiv_extended_ketosis_3,
+        R.string.motiv_extended_ketosis_4
     )
 )
 
@@ -52,17 +54,21 @@ private val dayOfYear: Int
  *   si ya no hay fase posterior.
  */
 fun fastingMotivation(
+    context: Context,
     currentPhase: FastingPhase,
     nextPhase: FastingPhase?,
     elapsedHours: Float,
     minutesToNextPhase: Long?
 ): String {
     if (nextPhase != null && minutesToNextPhase != null && minutesToNextPhase in 0..59) {
-        return "Casi en «${nextPhase.name}». Aguanta un poco más."
+        return context.getString(
+            R.string.motivation_almost_next_phase,
+            context.getString(nextPhase.nameRes)
+        )
     }
-    val pool = PHASE_MESSAGES[currentPhase.name] ?: return currentPhase.motivation
+    val pool = PHASE_MESSAGES[currentPhase.id] ?: return context.getString(currentPhase.motivationRes)
     val idx = ((elapsedHours.toInt() + dayOfYear) % pool.size + pool.size) % pool.size
-    return pool[idx]
+    return context.getString(pool[idx])
 }
 
 /**
@@ -70,11 +76,11 @@ fun fastingMotivation(
  * Devuelve null cuando no hay nada contextual que decir: en ese caso la
  * tarjeta muestra la cita diaria de siempre.
  */
-fun streakMotivation(streak: Int, completedToday: Boolean, hasHistory: Boolean): String? = when {
-    !hasHistory                     -> "Tu primer ayuno empieza con un solo toque."
-    completedToday && streak >= 2   -> "Racha de $streak días asegurada hoy. 🔥"
-    completedToday                  -> "Ayuno de hoy completado. Mañana, otra vez."
-    streak >= 2                     -> "Llevas $streak días seguidos. No rompas la cadena hoy."
-    streak == 1                     -> "Ayer lo lograste. Encadena hoy el segundo día."
+fun streakMotivation(context: Context, streak: Int, completedToday: Boolean, hasHistory: Boolean): String? = when {
+    !hasHistory                     -> context.getString(R.string.streak_first_fast)
+    completedToday && streak >= 2   -> context.getString(R.string.streak_completed_multi, streak)
+    completedToday                  -> context.getString(R.string.streak_completed_today)
+    streak >= 2                     -> context.getString(R.string.streak_ongoing, streak)
+    streak == 1                     -> context.getString(R.string.streak_day_one)
     else                            -> null
 }

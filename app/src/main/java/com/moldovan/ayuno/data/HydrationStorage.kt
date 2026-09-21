@@ -2,14 +2,16 @@ package com.moldovan.ayuno.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
+import com.moldovan.ayuno.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Calendar
 
-enum class HydrationType(val label: String, val emoji: String) {
-    WATER("Agua", "💧"),
-    COFFEE("Café", "☕"),
-    TEA("Infusión", "🍵")
+enum class HydrationType(@StringRes val labelRes: Int, val emoji: String) {
+    WATER(R.string.hydration_water, "💧"),
+    COFFEE(R.string.hydration_coffee, "☕"),
+    TEA(R.string.hydration_tea, "🍵")
 }
 
 data class HydrationEntry(
@@ -79,6 +81,6 @@ class HydrationStorage(context: Context) {
     )
 
     companion object {
-        private const val KEY_HYDRATION = "hydration_history"
+        internal const val KEY_HYDRATION = "hydration_history"
     }
 }

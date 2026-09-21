@@ -29,13 +29,13 @@ class FastingWidgetProvider : AppWidgetProvider() {
             ACTION_ADD_LIQUID -> {
                 if (FastingStorage(context).getActiveSession() != null) {
                     HydrationStorage(context).addEntry(HydrationType.WATER, 250)
-                    Toast.makeText(context, "+250 ml registrados", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.widget_toast_liquid), Toast.LENGTH_SHORT).show()
                     updateAll(context)
                 }
             }
             ACTION_END_FAST -> {
                 if (FastingStorage(context).endSession() != null) {
-                    Toast.makeText(context, "Ayuno finalizado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.widget_toast_end), Toast.LENGTH_SHORT).show()
                 }
                 updateAll(context)
             }
@@ -81,9 +81,9 @@ class FastingWidgetProvider : AppWidgetProvider() {
 
             val session = FastingStorage(context).getActiveSession()
             if (session == null) {
-                views.setTextViewText(R.id.widget_phase, "Sin ayuno activo")
-                views.setTextViewText(R.id.widget_time, "--:--")
-                views.setTextViewText(R.id.widget_subtitle, "Toca para abrir Ayuno")
+                views.setTextViewText(R.id.widget_phase, context.getString(R.string.widget_no_active))
+                views.setTextViewText(R.id.widget_time, context.getString(R.string.widget_time_placeholder))
+                views.setTextViewText(R.id.widget_subtitle, context.getString(R.string.widget_tap_to_open))
                 views.setProgressBar(R.id.widget_progress, 1000, 0, false)
                 views.setViewVisibility(R.id.widget_actions, View.GONE)
             } else {
@@ -105,12 +105,13 @@ class FastingWidgetProvider : AppWidgetProvider() {
                 val remainingH   = (remainingMs / 3_600_000).coerceAtLeast(0)
                 val remainingMin = ((remainingMs % 3_600_000) / 60_000).coerceAtLeast(0)
 
-                val planName = fastingPlanById(session.planId)?.name ?: "Ayuno libre"
+                val planName = fastingPlanById(session.planId)?.let { context.getString(it.nameRes) }
+                    ?: context.getString(R.string.widget_free_fast)
                 val liquidMl = HydrationStorage(context).getTodayEntries().sumOf { it.amountMl }
 
-                views.setTextViewText(R.id.widget_phase, currentPhase.name.uppercase())
+                views.setTextViewText(R.id.widget_phase, context.getString(currentPhase.nameRes).uppercase())
                 views.setTextViewText(R.id.widget_time, "%02d:%02d".format(remainingH, remainingMin))
-                views.setTextViewText(R.id.widget_subtitle, "$planName · $liquidMl ml hoy")
+                views.setTextViewText(R.id.widget_subtitle, context.getString(R.string.widget_subtitle_format, planName, liquidMl))
                 views.setProgressBar(R.id.widget_progress, 1000, (progress * 1000).toInt(), false)
                 views.setViewVisibility(R.id.widget_actions, View.VISIBLE)
             }

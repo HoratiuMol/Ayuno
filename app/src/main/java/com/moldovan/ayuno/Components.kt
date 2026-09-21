@@ -1,5 +1,6 @@
 package com.moldovan.ayuno
 
+import com.moldovan.ayuno.R
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +39,8 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +58,9 @@ import com.moldovan.ayuno.data.FastingPhase
 import com.moldovan.ayuno.data.FastingPlan
 import com.moldovan.ayuno.data.FastingStorage
 import com.moldovan.ayuno.data.fastingPlanById
+import com.moldovan.ayuno.data.fastingPhaseById
+import com.moldovan.ayuno.data.hasEatingWindow
+import com.moldovan.ayuno.data.eatingWindowHours
 import com.moldovan.ayuno.data.computeFastingStreak
 import com.moldovan.ayuno.data.fastingMotivation
 import com.moldovan.ayuno.data.computeAchievements
@@ -78,6 +85,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.draw.alpha
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Restore
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -129,13 +138,14 @@ fun FastingRingView(
 
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surfaceVariant
+    val context = LocalContext.current
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
         Text(
-            text     = currentPhase.name.uppercase(),
+            text     = stringResource(currentPhase.nameRes).uppercase(),
             style    = MaterialTheme.typography.labelMedium,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -178,6 +188,7 @@ fun FastingRingView(
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text      = fastingMotivation(
+                        context            = context,
                         currentPhase       = currentPhase,
                         nextPhase          = nextPhase,
                         elapsedHours       = elapsedHours,
@@ -226,7 +237,7 @@ fun PhaseTracker(
                     modifier           = Modifier.size(18.dp)
                 )
                 Text(
-                    text  = phase.name,
+                    text  = stringResource(phase.nameRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -258,7 +269,7 @@ fun PhaseTracker(
                 modifier           = Modifier.size(18.dp)
             )
             Text(
-                text       = currentPhase.name,
+                text       = stringResource(currentPhase.nameRes),
                 style      = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 color      = MaterialTheme.colorScheme.onSurface
@@ -284,7 +295,7 @@ fun PhaseTracker(
                     modifier           = Modifier.size(18.dp)
                 )
                 Text(
-                    text  = nextPhase.name,
+                    text  = stringResource(nextPhase.nameRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
@@ -295,6 +306,153 @@ fun PhaseTracker(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PlanProgressCard — hace visible el plan elegido durante el ayuno activo,
+// con sus partes diferenciadas: ventana de ayuno vs. ventana de alimentación
+// (o "día completo" para planes como ADF/5:2 sin ventana de comida).
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun PlanProgressCard(
+    plan: FastingPlan,
+    startTime: Long,
+    modifier: Modifier = Modifier
+) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) { delay(1_000); now = System.currentTimeMillis() }
+    }
+
+    val elapsedHours = (now - startTime) / 3_600_000f
+    val goalHours     = plan.goalHours
+    val goalReached   = elapsedHours >= goalHours
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape    = MaterialTheme.shapes.large,
+        colors   = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text       = stringResource(R.string.plan_progress_title, stringResource(plan.nameRes)),
+                        style      = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color      = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text  = stringResource(plan.subtitleRes),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                DifficultyBadge(difficulty = plan.difficulty)
+            }
+
+            PlanWindowBar(
+                elapsedHours = elapsedHours,
+                goalHours    = goalHours,
+                totalHours   = if (plan.hasEatingWindow) 24 else goalHours
+            )
+
+            if (plan.hasEatingWindow) {
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text  = stringResource(R.string.plan_progress_fast_window, goalHours),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text  = stringResource(R.string.plan_progress_eat_window, plan.eatingWindowHours),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Text(
+                    text = if (!goalReached)
+                        stringResource(R.string.plan_progress_fast_remaining, goalHours - elapsedHours, plan.eatingWindowHours)
+                    else
+                        stringResource(R.string.plan_progress_eat_open, plan.eatingWindowHours),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            } else {
+                Text(
+                    text  = stringResource(R.string.plan_progress_full_day, goalHours),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = if (!goalReached)
+                        stringResource(R.string.plan_progress_full_day_remaining, goalHours - elapsedHours)
+                    else
+                        stringResource(R.string.plan_progress_full_day_done),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlanWindowBar(elapsedHours: Float, goalHours: Int, totalHours: Int) {
+    val fastFraction = (goalHours.toFloat() / totalHours).coerceIn(0f, 1f)
+    val progress     = (elapsedHours / totalHours).coerceIn(0f, 1f)
+
+    val fastColor   = MaterialTheme.colorScheme.primary
+    val eatColor    = MaterialTheme.colorScheme.tertiary
+    val markerColor = MaterialTheme.colorScheme.onPrimaryContainer
+
+    Box(modifier = Modifier.fillMaxWidth().height(14.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(7.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(fastFraction.coerceAtLeast(0.001f))
+                    .fillMaxHeight()
+                    .background(fastColor)
+            )
+            if (fastFraction < 0.999f) {
+                Box(
+                    modifier = Modifier
+                        .weight((1f - fastFraction).coerceAtLeast(0.001f))
+                        .fillMaxHeight()
+                        .background(eatColor)
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(progress.coerceIn(0.02f, 1f)),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(3.dp, 14.dp)
+                    .background(markerColor)
+            )
         }
     }
 }
@@ -317,21 +475,21 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         Text(
-            text  = phase.description,
+            text  = stringResource(phase.descriptionRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text       = "✦ Beneficios",
+                text       = stringResource(R.string.label_benefits),
                 style      = MaterialTheme.typography.labelMedium,
                 color      = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold
             )
-            phase.benefits.forEach { benefit ->
+            phase.benefitsRes.forEach { benefitRes ->
                 Text(
-                    text  = "• $benefit",
+                    text  = "• ${stringResource(benefitRes)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -340,14 +498,14 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text       = "⚠ Precauciones",
+                text       = stringResource(R.string.label_cautions),
                 style      = MaterialTheme.typography.labelMedium,
                 color      = MaterialTheme.colorScheme.error,
                 fontWeight = FontWeight.SemiBold
             )
-            phase.cautions.forEach { caution ->
+            phase.cautionsRes.forEach { cautionRes ->
                 Text(
-                    text  = "• $caution",
+                    text  = "• ${stringResource(cautionRes)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -363,7 +521,7 @@ fun PhaseInfoSection(startTime: Long, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text  = "Nivel de hambre: ${phase.hungerLevel}",
+                text  = stringResource(R.string.label_hunger_level, stringResource(phase.hungerLevelRes)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -407,19 +565,19 @@ fun PlanEntryCard(onClick: () -> Unit) {
         ) {
             Column {
                 Text(
-                    text       = "Planes de ayuno",
+                    text       = stringResource(R.string.plan_entry_title),
                     style      = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text  = "16:8, OMAD, 5:2... elige uno y empieza al instante",
+                    text  = stringResource(R.string.plan_entry_subtitle),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             androidx.compose.material3.Icon(
                 imageVector        = Icons.Default.ChevronRight,
-                contentDescription = "Ver planes de ayuno",
+                contentDescription = stringResource(R.string.cd_view_plans),
                 tint               = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -440,16 +598,16 @@ fun PlanPickerScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("← Volver")
+            Text(stringResource(R.string.action_back))
         }
 
         Text(
-            text       = "Planes de ayuno",
+            text       = stringResource(R.string.plan_entry_title),
             style      = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text  = "Elige la metodología de ayuno intermitente que mejor se adapte a ti. El ayuno empezará al seleccionarla.",
+            text  = stringResource(R.string.plan_picker_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -480,13 +638,13 @@ private fun PlanCard(plan: FastingPlan, onClick: () -> Unit) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text       = plan.name,
+                        text       = stringResource(plan.nameRes),
                         style      = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color      = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text  = plan.subtitle,
+                        text  = stringResource(plan.subtitleRes),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -494,12 +652,12 @@ private fun PlanCard(plan: FastingPlan, onClick: () -> Unit) {
                 DifficultyBadge(difficulty = plan.difficulty)
             }
             Text(
-                text  = plan.description,
+                text  = stringResource(plan.descriptionRes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text  = plan.schedule,
+                text  = stringResource(plan.scheduleRes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -521,7 +679,7 @@ private fun DifficultyBadge(difficulty: FastingDifficulty) {
             .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Text(
-            text  = difficulty.label,
+            text  = stringResource(difficulty.labelRes),
             style = MaterialTheme.typography.labelSmall
         )
     }
@@ -564,7 +722,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text     = "Historial",
+                text     = stringResource(R.string.history_title),
                 style    = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -572,7 +730,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                 IconButton(onClick = { viewMode = HistoryViewMode.LISTA }) {
                     androidx.compose.material3.Icon(
                         imageVector = Icons.Default.ViewList,
-                        contentDescription = "Vista de lista",
+                        contentDescription = stringResource(R.string.cd_view_list),
                         tint = if (viewMode == HistoryViewMode.LISTA) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -580,7 +738,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                 IconButton(onClick = { viewMode = HistoryViewMode.CALENDARIO }) {
                     androidx.compose.material3.Icon(
                         imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Vista de calendario",
+                        contentDescription = stringResource(R.string.cd_view_calendar),
                         tint = if (viewMode == HistoryViewMode.CALENDARIO) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -599,7 +757,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                 FilterChip(
                     selected = minHourFilter == hours,
                     onClick  = { minHourFilter = hours },
-                    label    = { Text(if (hours == 0) "Todas" else "≥${hours}h") }
+                    label    = { Text(if (hours == 0) stringResource(R.string.filter_all) else stringResource(R.string.filter_min_hours, hours)) }
                 )
             }
         }
@@ -615,13 +773,13 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                 FilterChip(
                     selected = planFilter == null,
                     onClick  = { planFilter = null },
-                    label    = { Text("Todos los planes") }
+                    label    = { Text(stringResource(R.string.filter_all_plans)) }
                 )
                 availablePlans.forEach { plan ->
                     FilterChip(
                         selected = planFilter == plan.id,
                         onClick  = { planFilter = plan.id },
-                        label    = { Text(plan.name) }
+                        label    = { Text(stringResource(plan.nameRes)) }
                     )
                 }
             }
@@ -631,7 +789,7 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
             HistoryViewMode.LISTA -> {
                 if (filtered.isEmpty()) {
                     Text(
-                        text  = "No hay ayunos que coincidan con el filtro.",
+                        text  = stringResource(R.string.history_empty_filtered),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -659,19 +817,22 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text  = "Duración: %dh %02dm".format(durationH, durationMin),
+                                    text  = stringResource(R.string.history_duration, durationH, durationMin),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                                 if (session.completedPhases.isNotEmpty()) {
+                                    val lastPhaseId = session.completedPhases.last()
+                                    val lastPhaseName = fastingPhaseById(lastPhaseId)?.let { stringResource(it.nameRes) }
+                                        ?: lastPhaseId
                                     Text(
-                                        text  = "Última fase: ${session.completedPhases.last()}",
+                                        text  = stringResource(R.string.history_last_phase, lastPhaseName),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 fastingPlanById(session.planId)?.let { plan ->
                                     Text(
-                                        text  = "Plan: ${plan.name}",
+                                        text  = stringResource(R.string.history_plan_label, stringResource(plan.nameRes)),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -680,12 +841,12 @@ fun FastingHistorySection(key: Int, storage: FastingStorage) {
                             Spacer(modifier = Modifier.width(8.dp))
                             if (session.completed) {
                                 Badge(containerColor = MaterialTheme.colorScheme.primary) {
-                                    Text("✓ ${session.goalHours}h")
+                                    Text(stringResource(R.string.history_completed_badge, session.goalHours))
                                 }
                             } else if (session.endTime != null) {
                                 Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
                                     Text(
-                                        text  = "Cancelado",
+                                        text  = stringResource(R.string.history_cancelled_badge),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
@@ -738,7 +899,7 @@ private fun HistoryCalendar(sessions: List<FastingSession>) {
         map
     }
 
-    val monthFmt = remember { SimpleDateFormat("MMMM yyyy", Locale("es", "ES")) }
+    val monthFmt = remember { SimpleDateFormat("MMMM yyyy", Locale.getDefault()) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -747,7 +908,7 @@ private fun HistoryCalendar(sessions: List<FastingSession>) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { monthOffset-- }) {
-                androidx.compose.material3.Icon(Icons.Default.ChevronLeft, contentDescription = "Mes anterior")
+                androidx.compose.material3.Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.cd_prev_month))
             }
             Text(
                 text       = monthFmt.format(cal.time).replaceFirstChar { it.uppercase() },
@@ -755,14 +916,17 @@ private fun HistoryCalendar(sessions: List<FastingSession>) {
                 fontWeight = FontWeight.SemiBold
             )
             IconButton(onClick = { monthOffset++ }) {
-                androidx.compose.material3.Icon(Icons.Default.ChevronRight, contentDescription = "Mes siguiente")
+                androidx.compose.material3.Icon(Icons.Default.ChevronRight, contentDescription = stringResource(R.string.cd_next_month))
             }
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
-            listOf("L", "M", "X", "J", "V", "S", "D").forEach { label ->
+            listOf(
+                R.string.weekday_mon, R.string.weekday_tue, R.string.weekday_wed,
+                R.string.weekday_thu, R.string.weekday_fri, R.string.weekday_sat, R.string.weekday_sun
+            ).forEach { labelRes ->
                 Text(
-                    text      = label,
+                    text      = stringResource(labelRes),
                     style     = MaterialTheme.typography.labelSmall,
                     color     = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -814,8 +978,8 @@ private fun HistoryCalendar(sessions: List<FastingSession>) {
 
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            LegendDot(color = MaterialTheme.colorScheme.primary, label = "Completado")
-            LegendDot(color = MaterialTheme.colorScheme.surfaceVariant, label = "Cancelado")
+            LegendDot(color = MaterialTheme.colorScheme.primary, label = stringResource(R.string.legend_completed))
+            LegendDot(color = MaterialTheme.colorScheme.surfaceVariant, label = stringResource(R.string.history_cancelled_badge))
         }
     }
 }
@@ -844,16 +1008,16 @@ fun KnowledgeBaseScreen(onBack: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("← Volver")
+            Text(stringResource(R.string.action_back))
         }
 
         Text(
-            text       = "Guía del ayuno",
+            text       = stringResource(R.string.guide_title),
             style      = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text  = "Conoce qué ocurre en tu cuerpo durante cada fase del ayuno, sus beneficios y las precauciones a tener en cuenta.",
+            text  = stringResource(R.string.guide_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -876,18 +1040,19 @@ fun KnowledgeBaseScreen(onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text       = "Consideraciones generales",
+                    text       = stringResource(R.string.guide_considerations_title),
                     style      = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color      = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 listOf(
-                    "Mantente siempre bien hidratado: agua, infusiones y café solo están permitidos.",
-                    "No se recomienda en niños, embarazadas, ancianos ni personas con TCA.",
-                    "Ayunos de más de 24h requieren supervisión médica.",
-                    "Si experimentas mareos persistentes, atracones, irritabilidad extrema o bajada de rendimiento, detén el ayuno.",
-                    "Lo ideal es empezar de forma progresiva: 12/12, luego 14/10, después 16/8."
-                ).forEach { tip ->
+                    R.string.guide_tip_1,
+                    R.string.guide_tip_2,
+                    R.string.guide_tip_3,
+                    R.string.guide_tip_4,
+                    R.string.guide_tip_5
+                ).forEach { tipRes ->
+                    val tip = stringResource(tipRes)
                     Text(
                         text  = "• $tip",
                         style = MaterialTheme.typography.bodySmall,
@@ -917,7 +1082,7 @@ fun PhaseGuideCard(phase: FastingPhase) {
                 verticalAlignment     = Alignment.CenterVertically
             ) {
                 Text(
-                    text       = phase.name,
+                    text       = stringResource(phase.nameRes),
                     style      = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -929,31 +1094,31 @@ fun PhaseGuideCard(phase: FastingPhase) {
             }
 
             Text(
-                text  = phase.description,
+                text  = stringResource(phase.descriptionRes),
                 style = MaterialTheme.typography.bodyMedium
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    text       = "✦ Beneficios",
+                    text       = stringResource(R.string.label_benefits),
                     style      = MaterialTheme.typography.labelMedium,
                     color      = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
-                phase.benefits.forEach { b ->
-                    Text(text = "• $b", style = MaterialTheme.typography.bodySmall)
+                phase.benefitsRes.forEach { b ->
+                    Text(text = "• ${stringResource(b)}", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    text       = "⚠ Precauciones",
+                    text       = stringResource(R.string.label_cautions),
                     style      = MaterialTheme.typography.labelMedium,
                     color      = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.SemiBold
                 )
-                phase.cautions.forEach { c ->
-                    Text(text = "• $c", style = MaterialTheme.typography.bodySmall)
+                phase.cautionsRes.forEach { c ->
+                    Text(text = "• ${stringResource(c)}", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -964,7 +1129,7 @@ fun PhaseGuideCard(phase: FastingPhase) {
             ) {
                 Text(text = phase.hungerEmoji, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text  = "Nivel de hambre: ${phase.hungerLevel}",
+                    text  = stringResource(R.string.label_hunger_level, stringResource(phase.hungerLevelRes)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -997,19 +1162,19 @@ fun StatsRow(key: Int, storage: FastingStorage) {
         StatCard(
             icon     = Icons.Default.Whatshot,
             value    = "$streak",
-            label    = "días racha",
+            label    = stringResource(R.string.stat_streak_label),
             modifier = Modifier.weight(1f)
         )
         StatCard(
             icon     = Icons.Default.CheckCircle,
             value    = "${completed.size}",
-            label    = "completados",
+            label    = stringResource(R.string.stat_completed_label),
             modifier = Modifier.weight(1f)
         )
         StatCard(
             icon     = Icons.Default.Timer,
             value    = "%.1f".format(avgHours) + "h",
-            label    = "promedio",
+            label    = stringResource(R.string.stat_avg_label),
             modifier = Modifier.weight(1f)
         )
     }
@@ -1031,7 +1196,7 @@ fun ProgressChartSection(key: Int, storage: FastingStorage) {
     Card(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text       = "Duración de tus últimos ayunos",
+                text       = stringResource(R.string.chart_duration_title),
                 style      = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
@@ -1116,6 +1281,54 @@ fun StatCard(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BackupDialog — exportar/importar copia de seguridad manual (JSON)
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun BackupDialog(
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.backup_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text  = stringResource(R.string.backup_dialog_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedButton(
+                    onClick  = onExport,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape    = MaterialTheme.shapes.large
+                ) {
+                    Icon(Icons.Default.Save, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.backup_export_btn))
+                }
+                OutlinedButton(
+                    onClick  = onImport,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape    = MaterialTheme.shapes.large
+                ) {
+                    Icon(Icons.Default.Restore, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.backup_import_btn))
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_close))
+            }
+        }
+    )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ThemePickerDialog — B12
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1127,23 +1340,23 @@ fun ThemePickerDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Apariencia") },
+        title = { Text(stringResource(R.string.theme_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 ThemeOption(
-                    label    = "Claro",
+                    label    = stringResource(R.string.theme_light),
                     emoji    = "☀️",
                     selected = currentMode == ThemeMode.LIGHT,
                     onClick  = { onSelect(ThemeMode.LIGHT) }
                 )
                 ThemeOption(
-                    label    = "Oscuro",
+                    label    = stringResource(R.string.theme_dark),
                     emoji    = "🌙",
                     selected = currentMode == ThemeMode.DARK,
                     onClick  = { onSelect(ThemeMode.DARK) }
                 )
                 ThemeOption(
-                    label    = "Seguir sistema",
+                    label    = stringResource(R.string.theme_system),
                     emoji    = "📱",
                     selected = currentMode == ThemeMode.SYSTEM,
                     onClick  = { onSelect(ThemeMode.SYSTEM) }
@@ -1152,7 +1365,7 @@ fun ThemePickerDialog(
         },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cerrar")
+                Text(stringResource(R.string.action_close))
             }
         }
     )
@@ -1217,7 +1430,7 @@ fun FastingCompletedDialog(
             Column(horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text      = "🎉 ¡Ayuno completado!",
+                    text      = stringResource(R.string.completed_title),
                     style     = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -1239,10 +1452,12 @@ fun FastingCompletedDialog(
                     textAlign = TextAlign.Center,
                     modifier  = Modifier.fillMaxWidth()
                 )
-                val planName = fastingPlanById(session.planId)?.name
+                val plan = fastingPlanById(session.planId)
                 Text(
-                    text      = if (planName != null) "Plan $planName (${session.goalHours}h) completado"
-                    else "Objetivo de ${session.goalHours}h completado",
+                    text      = if (plan != null)
+                        stringResource(R.string.completed_duration_plan, stringResource(plan.nameRes), session.goalHours)
+                    else
+                        stringResource(R.string.completed_duration_goal, session.goalHours),
                     style     = MaterialTheme.typography.bodyMedium,
                     color     = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -1255,12 +1470,13 @@ fun FastingCompletedDialog(
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text       = "Fases superadas",
+                            text       = stringResource(R.string.completed_phases_title),
                             style      = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color      = MaterialTheme.colorScheme.primary
                         )
-                        session.completedPhases.forEach { phase ->
+                        session.completedPhases.forEach { phaseId ->
+                            val phaseName = fastingPhaseById(phaseId)?.let { stringResource(it.nameRes) } ?: phaseId
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment     = Alignment.CenterVertically
@@ -1272,7 +1488,7 @@ fun FastingCompletedDialog(
                                     modifier           = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text  = phase,
+                                    text  = phaseName,
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -1292,12 +1508,12 @@ fun FastingCompletedDialog(
                     modifier           = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Compartir")
+                Text(stringResource(R.string.action_share))
             }
         },
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cerrar")
+                Text(stringResource(R.string.action_close))
             }
         }
     )
@@ -1318,16 +1534,16 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("← Volver")
+            Text(stringResource(R.string.action_back))
         }
 
         Text(
-            text       = "Registro de peso",
+            text       = stringResource(R.string.weight_title),
             style      = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text  = "Anota tu peso periódicamente para ver tu evolución junto a tus ayunos.",
+            text  = stringResource(R.string.weight_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1340,7 +1556,7 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
             OutlinedTextField(
                 value         = input,
                 onValueChange = { input = it.filter { c -> c.isDigit() || c == '.' || c == ',' } },
-                label         = { Text("Peso (kg)") },
+                label         = { Text(stringResource(R.string.weight_input_label)) },
                 singleLine    = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier      = Modifier.weight(1f)
@@ -1356,7 +1572,7 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
                 },
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Guardar")
+                Text(stringResource(R.string.action_save))
             }
         }
 
@@ -1374,7 +1590,7 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
 
         if (entries.isEmpty()) {
             Text(
-                text  = "Todavía no has registrado ningún peso.",
+                text  = stringResource(R.string.weight_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1392,7 +1608,7 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
                     ) {
                         Column {
                             Text(
-                                text       = "%.1f kg".format(entry.weightKg),
+                                text       = stringResource(R.string.weight_value, entry.weightKg),
                                 style      = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -1408,7 +1624,7 @@ fun WeightScreen(storage: WeightStorage, onBack: () -> Unit) {
                         }) {
                             androidx.compose.material3.Icon(
                                 imageVector        = Icons.Default.Delete,
-                                contentDescription = "Eliminar registro",
+                                contentDescription = stringResource(R.string.cd_delete_entry),
                                 tint               = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -1442,12 +1658,12 @@ fun HydrationSection(storage: HydrationStorage, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text       = "Hidratación de hoy",
+                    text       = stringResource(R.string.hydration_title),
                     style      = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text  = "$totalMl ml",
+                    text  = stringResource(R.string.hydration_ml, totalMl),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -1467,12 +1683,12 @@ fun HydrationSection(storage: HydrationStorage, modifier: Modifier = Modifier) {
                     ) {
                         Text(type.emoji)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(type.label, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(type.labelRes), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
             Text(
-                text  = "Cada toque añade 250 ml. El agua, café y las infusiones sin azúcar no rompen el ayuno.",
+                text  = stringResource(R.string.hydration_hint),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1538,7 +1754,7 @@ fun StreakStrip(key: Int, storage: FastingStorage, modifier: Modifier = Modifier
 
     Column(modifier = modifier) {
         Text(
-            text  = "Últimos $days días",
+            text  = stringResource(R.string.streak_strip_label, days),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1582,16 +1798,16 @@ fun AchievementsScreen(key: Int, storage: FastingStorage, onBack: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("← Volver")
+            Text(stringResource(R.string.action_back))
         }
 
         Text(
-            text       = "Logros",
+            text       = stringResource(R.string.achievements_title),
             style      = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text  = "$unlockedCount de ${achievements.size} logros conseguidos",
+            text  = stringResource(R.string.achievements_subtitle, unlockedCount, achievements.size),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1629,14 +1845,14 @@ private fun AchievementRow(progress: AchievementProgress) {
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = achievement.title,
+                    text       = stringResource(achievement.titleRes),
                     style      = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color      = if (progress.unlocked) MaterialTheme.colorScheme.onPrimaryContainer
                     else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text  = achievement.description,
+                    text  = stringResource(achievement.descriptionRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (progress.unlocked) MaterialTheme.colorScheme.onPrimaryContainer
                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -1645,7 +1861,7 @@ private fun AchievementRow(progress: AchievementProgress) {
             if (progress.unlocked) {
                 androidx.compose.material3.Icon(
                     imageVector        = Icons.Default.CheckCircle,
-                    contentDescription = "Logro conseguido",
+                    contentDescription = stringResource(R.string.cd_achievement_unlocked),
                     tint               = MaterialTheme.colorScheme.primary
                 )
             }

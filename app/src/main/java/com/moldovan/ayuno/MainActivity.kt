@@ -3,6 +3,8 @@ package com.moldovan.ayuno
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
 import com.moldovan.ayuno.ui.theme.AyunoTheme
@@ -30,6 +33,11 @@ import android.os.Build
 import com.moldovan.ayuno.data.NotificationHelper
 import com.moldovan.ayuno.data.FASTING_PHASES
 import com.moldovan.ayuno.data.FREE_FASTING_GOAL_HOURS
+import com.moldovan.ayuno.data.fastingPlanById
+import com.moldovan.ayuno.data.BackupHelper
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.moldovan.ayuno.data.WeightStorage
 import com.moldovan.ayuno.data.HydrationStorage
 import com.moldovan.ayuno.data.computeFastingStreak
@@ -97,9 +105,52 @@ fun AyunoApp(
     var showAchievements by remember { mutableStateOf(false) }
     var showStartDialog by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
+    var showBackupDialog by remember { mutableStateOf(false) }
     //añadidos tras compartir
     var showCompletedDialog    by remember { mutableStateOf(false) }
     var lastCompletedSession   by remember { mutableStateOf<FastingSession?>(null) }
+
+    val context = LocalContext.current
+
+    val exportBackupLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.openOutputStream(uri)?.use { out ->
+                    out.write(BackupHelper.exportJson(context).toByteArray())
+                }
+            }
+        }
+    }
+
+    val importBackupLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val json = runCatching {
+                context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+            }.getOrNull()
+            if (json != null && BackupHelper.importJson(context, json).isSuccess) {
+                (context as? android.app.Activity)?.recreate()
+            }
+        }
+    }
+
+    if (showBackupDialog) {
+        BackupDialog(
+            onExport = {
+                val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())
+                exportBackupLauncher.launch("ayuno_backup_$timestamp.json")
+                showBackupDialog = false
+            },
+            onImport = {
+                importBackupLauncher.launch(arrayOf("application/json"))
+                showBackupDialog = false
+            },
+            onDismiss = { showBackupDialog = false }
+        )
+    }
 
     if (showThemePicker) {
         ThemePickerDialog(
@@ -119,14 +170,15 @@ fun AyunoApp(
             }
         )
     }
-    val context = LocalContext.current
+
+    val shareChooserTitle = stringResource(R.string.share_chooser_title)
 
     if (showCompletedDialog && lastCompletedSession != null) {
         FastingCompletedDialog(
             session   = lastCompletedSession!!,
             onShare   = {
                 val intent = ShareHelper.createShareIntent(context, lastCompletedSession!!)
-                context.startActivity(Intent.createChooser(intent, "Compartir ayuno"))
+                context.startActivity(Intent.createChooser(intent, shareChooserTitle))
             },
             onDismiss = {
                 showCompletedDialog  = false
@@ -158,13 +210,19 @@ fun AyunoApp(
                     IconButton(onClick = { showWeight = true }) {
                         Icon(
                             imageVector        = Icons.Default.MonitorWeight,
-                            contentDescription = "Registro de peso"
+                            contentDescription = stringResource(R.string.cd_weight_log)
                         )
                     }
                     IconButton(onClick = { showThemePicker = true }) {
                         Icon(
                             imageVector        = Icons.Default.Palette,
-                            contentDescription = "Cambiar tema"
+                            contentDescription = stringResource(R.string.cd_change_theme)
+                        )
+                    }
+                    IconButton(onClick = { showBackupDialog = true }) {
+                        Icon(
+                            imageVector        = Icons.Default.SettingsBackupRestore,
+                            contentDescription = stringResource(R.string.cd_backup)
                         )
                     }
                 },
@@ -183,7 +241,7 @@ fun AyunoApp(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text     = "Gestiona tu ayuno intermitente",
+                text     = stringResource(R.string.home_subtitle),
                 style    = MaterialTheme.typography.bodySmall,
                 color    = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -228,7 +286,7 @@ fun AyunoApp(
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Comenzar ayuno libre", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.btn_start_free_fast), style = MaterialTheme.typography.bodyLarge)
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedButton(
@@ -238,7 +296,7 @@ fun AyunoApp(
                     ) {
                         Icon(Icons.Default.Schedule, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ya llevo horas en ayuno", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.btn_already_fasting), style = MaterialTheme.typography.bodyLarge)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -249,7 +307,7 @@ fun AyunoApp(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.btn_guide), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         TextButton(onClick = { showAchievements = true }) {
                             Icon(
@@ -258,7 +316,7 @@ fun AyunoApp(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Logros", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.btn_achievements), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -275,7 +333,12 @@ fun AyunoApp(
 
                 else -> {
                     val session = activeSession!!
+                    val activePlan = fastingPlanById(session.planId)
                     Spacer(modifier = Modifier.height(16.dp))
+                    if (activePlan != null) {
+                        PlanProgressCard(plan = activePlan, startTime = session.startTime)
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                     FastingRingView(
                         startTime = session.startTime,
                         goalHours = session.goalHours
@@ -298,7 +361,7 @@ fun AyunoApp(
                         ) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("He comido")
+                            Text(stringResource(R.string.btn_i_ate))
                         }
                         OutlinedButton(
                             onClick = {
@@ -309,7 +372,7 @@ fun AyunoApp(
                         ) {
                             Icon(Icons.Default.Close, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Cancelar")
+                            Text(stringResource(R.string.action_cancel_fast))
                         }
                     }
                     TextButton(onClick = { showKnowledge = true }) {
@@ -319,7 +382,7 @@ fun AyunoApp(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guía del ayuno", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.btn_guide), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     HydrationSection(storage = hydrationStorage, modifier = Modifier.fillMaxWidth())
@@ -328,10 +391,15 @@ fun AyunoApp(
                         modifier = Modifier.fillMaxWidth(),
                         shape    = MaterialTheme.shapes.large
                     ) {
-                        PhaseInfoSection(
-                            startTime = session.startTime,
-                            modifier  = Modifier.padding(20.dp)
-                        )
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                text       = stringResource(R.string.body_section_title),
+                                style      = MaterialTheme.typography.labelMedium,
+                                color      = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            PhaseInfoSection(startTime = session.startTime)
+                        }
                     }
                 }
             }
@@ -359,12 +427,12 @@ fun StartFastingDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("¿Cuándo fue tu última comida?") },
+        title = { Text(stringResource(R.string.start_dialog_title)) },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Text(
-                    text      = "Hace %.1f horas".format(sliderValue),
+                    text      = stringResource(R.string.start_dialog_hours_ago, sliderValue),
                     style     = MaterialTheme.typography.headlineSmall,
                     color     = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
@@ -385,9 +453,9 @@ fun StartFastingDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("0.5h", style = MaterialTheme.typography.labelSmall,
+                    Text(stringResource(R.string.start_dialog_min_label), style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("23h", style = MaterialTheme.typography.labelSmall,
+                    Text(stringResource(R.string.start_dialog_max_label), style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
@@ -405,21 +473,21 @@ fun StartFastingDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text  = "📍 Fase actual: ${currentPhase.name}",
+                            text  = stringResource(R.string.start_dialog_current_phase, stringResource(currentPhase.nameRes)),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         if (remainingH != null) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text  = "⏭ Siguiente fase en %.1fh".format(remainingH),
+                                text  = stringResource(R.string.start_dialog_next_phase_in, remainingH),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text      = currentPhase.description,
+                            text      = stringResource(currentPhase.descriptionRes),
                             style     = MaterialTheme.typography.bodySmall,
                             color     = MaterialTheme.colorScheme.onPrimaryContainer,
                             textAlign = TextAlign.Center
@@ -430,11 +498,11 @@ fun StartFastingDialog(
         },
         confirmButton = {
             Button(onClick = { onConfirm(sliderValue) }) {
-                Text("Iniciar ayuno")
+                Text(stringResource(R.string.start_dialog_confirm))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel_fast)) }
         }
     )
 }
@@ -464,7 +532,7 @@ fun MedicalDisclaimerCard() {
                 modifier = Modifier.size(18.dp).padding(top = 2.dp)
             )
             Text(
-                text = "Recuerda consultar con tu médico para ayunos de largo plazo y seguir su consejo y guía. Esta app es tan solo un gestor del ayuno, no una recomendación médica. El ayuno puede ser diferente para cada persona en función de su fisiología y necesidades médicas y metabólicas.",
+                text = stringResource(R.string.medical_disclaimer),
                 style     = MaterialTheme.typography.bodySmall,
                 color     = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start
@@ -478,31 +546,33 @@ fun MedicalDisclaimerCard() {
 // (streakMotivation) si aplica; si no, la cita diaria que rota por día del año.
 // ─────────────────────────────────────────────────────────────────────────────
 
-private data class Quote(val text: String, val author: String)
+private data class QuoteRes(@androidx.annotation.StringRes val textRes: Int, @androidx.annotation.StringRes val authorRes: Int)
 
 private val QUOTES = listOf(
-    Quote("El ayuno es la puerta hacia la claridad.", "Proverbio"),
-    Quote("Tu cuerpo es un templo, cuídalo con sabiduría.", "Hipócrates"),
-    Quote("La disciplina es el puente entre metas y logros.", "Jim Rohn"),
-    Quote("Comer es una necesidad, pero comer con inteligencia es un arte.", "La Rochefoucauld"),
-    Quote("El ayuno del cuerpo es alimento del alma.", "San Juan Crisóstomo"),
-    Quote("La simplicidad es la sofisticación definitiva.", "Leonardo da Vinci"),
-    Quote("Cuando el estómago descansa, la mente despierta.", "Proverbio árabe"),
-    Quote("No es lo que comes, sino lo que digieres, lo que te hace fuerte.", "Proverbio"),
-    Quote("El descanso es tan importante como el movimiento.", "Sabiduría popular"),
-    Quote("Menos es más cuando se trata de alimentar el cuerpo.", "Paracelso"),
-    Quote("La paciencia es amarga, pero sus frutos son dulces.", "Aristóteles"),
-    Quote("Cuida tu cuerpo, es el único lugar donde vives.", "Jim Rohn"),
-    Quote("El que conquista a otros es fuerte; el que se conquista a sí mismo es poderoso.", "Lao Tse"),
-    Quote("La salud no es valorada hasta que llega la enfermedad.", "Thomas Fuller"),
-    Quote("Cada día es una nueva oportunidad para cuidarte.", "Sabiduría popular")
+    QuoteRes(R.string.quote_1_text, R.string.quote_1_author),
+    QuoteRes(R.string.quote_2_text, R.string.quote_2_author),
+    QuoteRes(R.string.quote_3_text, R.string.quote_3_author),
+    QuoteRes(R.string.quote_4_text, R.string.quote_4_author),
+    QuoteRes(R.string.quote_5_text, R.string.quote_5_author),
+    QuoteRes(R.string.quote_6_text, R.string.quote_6_author),
+    QuoteRes(R.string.quote_7_text, R.string.quote_7_author),
+    QuoteRes(R.string.quote_8_text, R.string.quote_8_author),
+    QuoteRes(R.string.quote_9_text, R.string.quote_9_author),
+    QuoteRes(R.string.quote_10_text, R.string.quote_10_author),
+    QuoteRes(R.string.quote_11_text, R.string.quote_11_author),
+    QuoteRes(R.string.quote_12_text, R.string.quote_12_author),
+    QuoteRes(R.string.quote_13_text, R.string.quote_13_author),
+    QuoteRes(R.string.quote_14_text, R.string.quote_14_author),
+    QuoteRes(R.string.quote_15_text, R.string.quote_15_author)
 )
 
 @Composable
 fun MotivationCard(key: Int, storage: FastingStorage) {
+    val context        = LocalContext.current
     val history        = remember(key) { storage.getHistory() }
     val contextualMsg  = remember(history) {
         streakMotivation(
+            context        = context,
             streak         = computeFastingStreak(history),
             completedToday = hasCompletedFastToday(history),
             hasHistory     = history.isNotEmpty()
@@ -520,7 +590,7 @@ fun MotivationCard(key: Int, storage: FastingStorage) {
             .padding(horizontal = 8.dp)
     ) {
         Text(
-            text      = "\"${contextualMsg ?: quote.text}\"",
+            text      = "\"${contextualMsg ?: stringResource(quote.textRes)}\"",
             style     = MaterialTheme.typography.bodyMedium.copy(
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             ),
@@ -530,7 +600,7 @@ fun MotivationCard(key: Int, storage: FastingStorage) {
         if (contextualMsg == null) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text      = "— ${quote.author}",
+                text      = "— ${stringResource(quote.authorRes)}",
                 style     = MaterialTheme.typography.labelSmall,
                 color     = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

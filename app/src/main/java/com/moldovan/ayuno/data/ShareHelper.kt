@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.core.content.FileProvider
+import com.moldovan.ayuno.R
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -17,7 +18,7 @@ import java.util.Locale
 object ShareHelper {
 
     fun createShareIntent(context: Context, session: FastingSession): Intent {
-        val bitmap = generateShareImage(session)
+        val bitmap = generateShareImage(context, session)
         val file   = saveBitmapToCache(context, bitmap)
         val uri    = FileProvider.getUriForFile(
             context,
@@ -30,9 +31,9 @@ object ShareHelper {
         val durationMin = (durationMs % 3_600_000) / 60_000
 
         val shareText = buildString {
-            appendLine("Acabo de completar un ayuno de ${durationH}h ${"%02d".format(durationMin)}m 🌙")
+            appendLine(context.getString(R.string.share_text_intro, durationH, durationMin))
             appendLine()
-            appendLine("Mira mi último ayuno. Si quieres mejorar tu salud únete tú también 👇")
+            appendLine(context.getString(R.string.share_text_cta))
             append(STORE_URL)
         }
 
@@ -44,7 +45,7 @@ object ShareHelper {
         }
     }
 
-    private fun generateShareImage(session: FastingSession): Bitmap {
+    private fun generateShareImage(context: Context, session: FastingSession): Bitmap {
         val size   = 1080
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -64,7 +65,7 @@ object ShareHelper {
             typeface  = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("AYUNO", size / 2f, 110f, paint)
+        canvas.drawText(context.getString(R.string.share_app_name), size / 2f, 110f, paint)
 
         // ── Línea divisoria ────────────────────────────────────────────────
         paint.apply {
@@ -92,7 +93,10 @@ object ShareHelper {
             textSize = 42f
             typeface = Typeface.DEFAULT
         }
-        canvas.drawText("✓  Objetivo de ${session.goalHours}h completado", size / 2f, 385f, paint)
+        canvas.drawText(
+            context.getString(R.string.share_goal_completed, session.goalHours),
+            size / 2f, 385f, paint
+        )
 
         // ── Línea divisoria ────────────────────────────────────────────────
         paint.apply {
@@ -110,7 +114,7 @@ object ShareHelper {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.LEFT
         }
-        canvas.drawText("Fases completadas", 80f, 490f, paint)
+        canvas.drawText(context.getString(R.string.share_phases_completed_title), 80f, 490f, paint)
 
         paint.apply {
             color    = Color.parseColor("#F5F0E8")
@@ -118,14 +122,15 @@ object ShareHelper {
             typeface = Typeface.DEFAULT
         }
         var yPhase = 555f
-        session.completedPhases.take(4).forEach { phase ->
-            canvas.drawText("✓   $phase", 80f, yPhase, paint)
+        session.completedPhases.take(4).forEach { phaseId ->
+            val phaseName = fastingPhaseById(phaseId)?.let { context.getString(it.nameRes) } ?: phaseId
+            canvas.drawText("✓   $phaseName", 80f, yPhase, paint)
             yPhase += 62f
         }
 
         // ── Frase motivacional de la última fase ───────────────────────────
         val lastPhase = FASTING_PHASES
-            .lastOrNull { phase -> session.completedPhases.contains(phase.name) }
+            .lastOrNull { phase -> session.completedPhases.contains(phase.id) }
         if (lastPhase != null) {
             paint.apply {
                 color    = Color.parseColor("#E8C96A")
@@ -134,12 +139,12 @@ object ShareHelper {
                 textAlign = Paint.Align.CENTER
                 alpha    = 200
             }
-            canvas.drawText("\"${lastPhase.motivation}\"", size / 2f, 880f, paint)
+            canvas.drawText("\"${context.getString(lastPhase.motivationRes)}\"", size / 2f, 880f, paint)
             paint.alpha = 255
         }
 
         // ── Fecha ──────────────────────────────────────────────────────────
-        val dateStr = SimpleDateFormat("dd MMMM yyyy", Locale("es"))
+        val dateStr = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
             .format(Date(session.startTime))
         paint.apply {
             color    = Color.parseColor("#8FBF9F")

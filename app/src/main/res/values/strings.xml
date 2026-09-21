@@ -1,3 +1,356 @@
 <resources>
     <string name="app_name">Ayuno</string>
+
+    <!-- Acciones comunes -->
+    <string name="action_back">← Volver</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_share">Compartir</string>
+
+    <!-- Pantalla principal -->
+    <string name="home_subtitle">Gestiona tu ayuno intermitente</string>
+    <string name="cd_weight_log">Registro de peso</string>
+    <string name="cd_change_theme">Cambiar tema</string>
+    <string name="cd_backup">Copia de seguridad</string>
+    <string name="btn_start_free_fast">Comenzar ayuno libre</string>
+    <string name="btn_already_fasting">Ya llevo horas en ayuno</string>
+    <string name="btn_guide">Guía del ayuno</string>
+    <string name="btn_achievements">Logros</string>
+    <string name="body_section_title">Qué está pasando en tu cuerpo ahora</string>
+    <string name="share_chooser_title">Compartir ayuno</string>
+
+    <!-- Diálogo: iniciar ayuno ya empezado -->
+    <string name="start_dialog_title">¿Cuándo fue tu última comida?</string>
+    <string name="start_dialog_hours_ago">Hace %1$.1f horas</string>
+    <string name="start_dialog_min_label">0.5h</string>
+    <string name="start_dialog_max_label">23h</string>
+    <string name="start_dialog_current_phase">📍 Fase actual: %1$s</string>
+    <string name="start_dialog_next_phase_in">⏭ Siguiente fase en %1$.1fh</string>
+    <string name="start_dialog_confirm">Iniciar ayuno</string>
+
+    <!-- Aviso médico -->
+    <string name="medical_disclaimer">Recuerda consultar con tu médico para ayunos de largo plazo y seguir su consejo y guía. Esta app es tan solo un gestor del ayuno, no una recomendación médica. El ayuno puede ser diferente para cada persona en función de su fisiología y necesidades médicas y metabólicas.</string>
+
+    <!-- Ayuno activo -->
+    <string name="btn_i_ate">He comido</string>
+    <string name="action_cancel_fast">Cancelar</string>
+
+    <!-- Frases del día -->
+    <string name="quote_1_text">El ayuno es la puerta hacia la claridad.</string>
+    <string name="quote_1_author">Proverbio</string>
+    <string name="quote_2_text">Tu cuerpo es un templo, cuídalo con sabiduría.</string>
+    <string name="quote_2_author">Hipócrates</string>
+    <string name="quote_3_text">La disciplina es el puente entre metas y logros.</string>
+    <string name="quote_3_author">Jim Rohn</string>
+    <string name="quote_4_text">Comer es una necesidad, pero comer con inteligencia es un arte.</string>
+    <string name="quote_4_author">La Rochefoucauld</string>
+    <string name="quote_5_text">El ayuno del cuerpo es alimento del alma.</string>
+    <string name="quote_5_author">San Juan Crisóstomo</string>
+    <string name="quote_6_text">La simplicidad es la sofisticación definitiva.</string>
+    <string name="quote_6_author">Leonardo da Vinci</string>
+    <string name="quote_7_text">Cuando el estómago descansa, la mente despierta.</string>
+    <string name="quote_7_author">Proverbio árabe</string>
+    <string name="quote_8_text">No es lo que comes, sino lo que digieres, lo que te hace fuerte.</string>
+    <string name="quote_8_author">Proverbio</string>
+    <string name="quote_9_text">El descanso es tan importante como el movimiento.</string>
+    <string name="quote_9_author">Sabiduría popular</string>
+    <string name="quote_10_text">Menos es más cuando se trata de alimentar el cuerpo.</string>
+    <string name="quote_10_author">Paracelso</string>
+    <string name="quote_11_text">La paciencia es amarga, pero sus frutos son dulces.</string>
+    <string name="quote_11_author">Aristóteles</string>
+    <string name="quote_12_text">Cuida tu cuerpo, es el único lugar donde vives.</string>
+    <string name="quote_12_author">Jim Rohn</string>
+    <string name="quote_13_text">El que conquista a otros es fuerte; el que se conquista a sí mismo es poderoso.</string>
+    <string name="quote_13_author">Lao Tse</string>
+    <string name="quote_14_text">La salud no es valorada hasta que llega la enfermedad.</string>
+    <string name="quote_14_author">Thomas Fuller</string>
+    <string name="quote_15_text">Cada día es una nueva oportunidad para cuidarte.</string>
+    <string name="quote_15_author">Sabiduría popular</string>
+
+    <!-- Planes de ayuno: entrada y picker -->
+    <string name="plan_entry_title">Planes de ayuno</string>
+    <string name="plan_entry_subtitle">16:8, OMAD, 5:2... elige uno y empieza al instante</string>
+    <string name="cd_view_plans">Ver planes de ayuno</string>
+    <string name="plan_picker_subtitle">Elige la metodología de ayuno intermitente que mejor se adapte a ti. El ayuno empezará al seleccionarla.</string>
+
+    <!-- Tarjeta de progreso del plan activo -->
+    <string name="plan_progress_title">Plan %1$s</string>
+    <string name="plan_progress_fast_window">🌙 Ventana de ayuno · %1$dh</string>
+    <string name="plan_progress_eat_window">🍽 Ventana de alimentación · %1$dh</string>
+    <string name="plan_progress_fast_remaining">Faltan %1$.1fh para que se abra tu ventana de alimentación de %2$dh.</string>
+    <string name="plan_progress_eat_open">✓ Ventana de ayuno completada — tu ventana de alimentación de %1$dh ya está abierta.</string>
+    <string name="plan_progress_full_day">Día de ayuno completo · %1$dh</string>
+    <string name="plan_progress_full_day_remaining">Faltan %1$.1fh para completar el objetivo de este día de ayuno.</string>
+    <string name="plan_progress_full_day_done">🎉 Objetivo del día de ayuno completado.</string>
+
+    <!-- Dificultad -->
+    <string name="difficulty_beginner">Principiante</string>
+    <string name="difficulty_intermediate">Intermedio</string>
+    <string name="difficulty_advanced">Avanzado</string>
+
+    <!-- Planes de ayuno: contenido -->
+    <string name="plan_12_12_name">12:12</string>
+    <string name="plan_12_12_subtitle">Iniciación</string>
+    <string name="plan_12_12_desc">Un ayuno suave de 12 horas, ideal para empezar a familiarizarte con el ayuno intermitente sin apenas esfuerzo.</string>
+    <string name="plan_12_12_schedule">Ej.: cena a las 20:00, desayuno a las 08:00</string>
+
+    <string name="plan_14_10_name">14:10</string>
+    <string name="plan_14_10_subtitle">Progresión</string>
+    <string name="plan_14_10_desc">Amplía ligeramente la ventana de ayuno mientras tu cuerpo se adapta al método.</string>
+    <string name="plan_14_10_schedule">Ej.: cena a las 20:00, desayuno a las 10:00</string>
+
+    <string name="plan_16_8_name">16:8</string>
+    <string name="plan_16_8_subtitle">Leangains</string>
+    <string name="plan_16_8_desc">El método de ayuno intermitente más popular: 16 horas de ayuno y una ventana de 8 horas para comer.</string>
+    <string name="plan_16_8_schedule">Ej.: cena a las 20:00, comida a las 12:00</string>
+
+    <string name="plan_18_6_name">18:6</string>
+    <string name="plan_18_6_subtitle">Ventana reducida</string>
+    <string name="plan_18_6_desc">Reduce la ventana de alimentación a 6 horas para profundizar en los beneficios metabólicos del ayuno.</string>
+    <string name="plan_18_6_schedule">Ej.: cena a las 18:00, comida a las 12:00</string>
+
+    <string name="plan_20_4_name">20:4</string>
+    <string name="plan_20_4_subtitle">Warrior Diet</string>
+    <string name="plan_20_4_desc">Una única ventana de 4 horas para comer al día; requiere experiencia previa con ayunos más cortos.</string>
+    <string name="plan_20_4_schedule">Ej.: una comida principal entre las 16:00 y las 20:00</string>
+
+    <string name="plan_omad_name">OMAD</string>
+    <string name="plan_omad_subtitle">Una comida al día</string>
+    <string name="plan_omad_desc">One Meal A Day: 23 horas de ayuno con una única comida diaria. Máxima simplicidad, requiere experiencia.</string>
+    <string name="plan_omad_schedule">Ej.: una única comida a las 18:00</string>
+
+    <string name="plan_adf_name">ADF</string>
+    <string name="plan_adf_subtitle">Días alternos</string>
+    <string name="plan_adf_desc">Alternate Day Fasting: ayunos completos de 24 horas en días alternos, combinados con días de alimentación normal.</string>
+    <string name="plan_adf_schedule">Ej.: ayuna un día sí y un día no</string>
+
+    <string name="plan_5_2_name">5:2</string>
+    <string name="plan_5_2_subtitle">Restricción calórica</string>
+    <string name="plan_5_2_desc">5 días de alimentación normal y 2 días no consecutivos con ingesta muy reducida. Aquí, cada día de restricción se registra como un ayuno de 24h.</string>
+    <string name="plan_5_2_schedule">Ej.: restricción los lunes y jueves</string>
+
+    <!-- Historial -->
+    <string name="history_title">Historial</string>
+    <string name="cd_view_list">Vista de lista</string>
+    <string name="cd_view_calendar">Vista de calendario</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_min_hours">≥%1$dh</string>
+    <string name="filter_all_plans">Todos los planes</string>
+    <string name="history_empty_filtered">No hay ayunos que coincidan con el filtro.</string>
+    <string name="history_duration">Duración: %1$dh %2$02dm</string>
+    <string name="history_last_phase">Última fase: %1$s</string>
+    <string name="history_plan_label">Plan: %1$s</string>
+    <string name="history_completed_badge">✓ %1$dh</string>
+    <string name="history_cancelled_badge">Cancelado</string>
+
+    <!-- Calendario de historial -->
+    <string name="cd_prev_month">Mes anterior</string>
+    <string name="cd_next_month">Mes siguiente</string>
+    <string name="weekday_mon">L</string>
+    <string name="weekday_tue">M</string>
+    <string name="weekday_wed">X</string>
+    <string name="weekday_thu">J</string>
+    <string name="weekday_fri">V</string>
+    <string name="weekday_sat">S</string>
+    <string name="weekday_sun">D</string>
+    <string name="legend_completed">Completado</string>
+
+    <!-- Guía del ayuno -->
+    <string name="guide_title">Guía del ayuno</string>
+    <string name="guide_subtitle">Conoce qué ocurre en tu cuerpo durante cada fase del ayuno, sus beneficios y las precauciones a tener en cuenta.</string>
+    <string name="guide_considerations_title">Consideraciones generales</string>
+    <string name="guide_tip_1">Mantente siempre bien hidratado: agua, infusiones y café solo están permitidos.</string>
+    <string name="guide_tip_2">No se recomienda en niños, embarazadas, ancianos ni personas con TCA.</string>
+    <string name="guide_tip_3">Ayunos de más de 24h requieren supervisión médica.</string>
+    <string name="guide_tip_4">Si experimentas mareos persistentes, atracones, irritabilidad extrema o bajada de rendimiento, detén el ayuno.</string>
+    <string name="guide_tip_5">Lo ideal es empezar de forma progresiva: 12/12, luego 14/10, después 16/8.</string>
+
+    <string name="label_benefits">✦ Beneficios</string>
+    <string name="label_cautions">⚠ Precauciones</string>
+    <string name="label_hunger_level">Nivel de hambre: %1$s</string>
+
+    <!-- Niveles de hambre -->
+    <string name="hunger_none">Nulo</string>
+    <string name="hunger_increasing">Creciente</string>
+    <string name="hunger_high">Alto</string>
+    <string name="hunger_decreasing">Decreciente</string>
+    <string name="hunger_low">Bajo</string>
+
+    <!-- Fases metabólicas del ayuno -->
+    <string name="phase_postprandial_name">Fase postprandial</string>
+    <string name="phase_postprandial_desc">Tu cuerpo está utilizando la energía de los alimentos que acabas de comer. El páncreas produce insulina para usar la glucosa y almacenar el exceso como glucógeno y grasa.</string>
+    <string name="phase_postprandial_motivation">La disciplina empieza cuando termina comer</string>
+    <string name="phase_postprandial_benefit_1">Digestión activa y absorción de nutrientes</string>
+    <string name="phase_postprandial_benefit_2">Almacenamiento de glucógeno hepático y muscular</string>
+    <string name="phase_postprandial_caution_1">No es recomendable hacer ejercicio intenso justo después de comer</string>
+
+    <string name="phase_glycogen_name">Quema de reservas</string>
+    <string name="phase_glycogen_desc">Tu cuerpo comienza a usar las reservas de glucógeno. La glucosa almacenada en el hígado mantiene los niveles en sangre. Se activan la gluconeogénesis y la lipólisis.</string>
+    <string name="phase_glycogen_motivation">Tu cuerpo aprende a usar reservas</string>
+    <string name="phase_glycogen_benefit_1">Se inicia la quema de grasa almacenada</string>
+    <string name="phase_glycogen_benefit_2">Producción de cuerpos cetónicos para energía</string>
+    <string name="phase_glycogen_benefit_3">Comienza la autofagia (renovación celular)</string>
+    <string name="phase_glycogen_benefit_4">Aumento de sensibilidad a la insulina</string>
+    <string name="phase_glycogen_caution_1">Puedes sentir hambre o ligera irritabilidad</string>
+    <string name="phase_glycogen_caution_2">Mantente bien hidratado/a</string>
+
+    <string name="phase_early_ketosis_name">Cetosis temprana</string>
+    <string name="phase_early_ketosis_desc">La glucosa en las células y el glucógeno se agotan. Tu cuerpo quema grasa almacenada como fuente principal de energía. La autofagia se intensifica.</string>
+    <string name="phase_early_ketosis_motivation">La incomodidad forja control y claridad</string>
+    <string name="phase_early_ketosis_benefit_1">Quema activa de grasa corporal</string>
+    <string name="phase_early_ketosis_benefit_2">Autofagia más intensa: limpieza celular</string>
+    <string name="phase_early_ketosis_benefit_3">Regulación del perfil lipídico</string>
+    <string name="phase_early_ketosis_benefit_4">Mejora de la sensibilidad a la insulina</string>
+    <string name="phase_early_ketosis_caution_1">Posible dolor de cabeza si no estás hidratado</string>
+    <string name="phase_early_ketosis_caution_2">No recomendado sin experiencia previa en ayunos</string>
+
+    <string name="phase_deep_ketosis_name">Cetosis profunda</string>
+    <string name="phase_deep_ketosis_desc">Tu cuerpo entra en cetosis plena: quema reservas de grasa para energía. Los cuerpos cetónicos actúan como combustible para el cerebro.</string>
+    <string name="phase_deep_ketosis_motivation">Ahora quemas grasa, sigue adelante</string>
+    <string name="phase_deep_ketosis_benefit_1">Rendimiento cognitivo mejorado y claridad mental</string>
+    <string name="phase_deep_ketosis_benefit_2">Mayor sensación de energía y bienestar</string>
+    <string name="phase_deep_ketosis_benefit_3">Reducción de triglicéridos y colesterol LDL</string>
+    <string name="phase_deep_ketosis_benefit_4">Renovación celular profunda (autofagia)</string>
+    <string name="phase_deep_ketosis_benefit_5">Posible efecto preventivo contra el cáncer y el envejecimiento</string>
+    <string name="phase_deep_ketosis_caution_1">Requiere supervisión médica</string>
+    <string name="phase_deep_ketosis_caution_2">No apto para principiantes</string>
+    <string name="phase_deep_ketosis_caution_3">Asegúrate de tomar agua, infusiones y electrolitos</string>
+    <string name="phase_deep_ketosis_caution_4">Detener si aparecen mareos persistentes o debilidad</string>
+
+    <string name="phase_extended_ketosis_name">Cetosis extendida</string>
+    <string name="phase_extended_ketosis_desc">Estado profundo de cetosis. Todos los órganos usan cuerpos cetónicos y grasas. Las hormonas tiroideas pueden verse afectadas.</string>
+    <string name="phase_extended_ketosis_motivation">Tu cuerpo se renueva desde dentro</string>
+    <string name="phase_extended_ketosis_benefit_1">Máxima autofagia y renovación celular</string>
+    <string name="phase_extended_ketosis_benefit_2">Mayor resistencia al estrés y toxinas</string>
+    <string name="phase_extended_ketosis_benefit_3">El hambre tiende a disminuir a partir del tercer día</string>
+    <string name="phase_extended_ketosis_caution_1">⚠️ SOLO con supervisión médica estricta</string>
+    <string name="phase_extended_ketosis_caution_2">Las hormonas tiroideas pueden alterarse</string>
+    <string name="phase_extended_ketosis_caution_3">El metabolismo puede verse afectado negativamente</string>
+    <string name="phase_extended_ketosis_caution_4">No apto para personas con TCA, embarazadas, niños o ancianos</string>
+    <string name="phase_extended_ketosis_caution_5">Detener inmediatamente si hay desmayos o confusión</string>
+
+    <!-- Estadísticas -->
+    <string name="stat_streak_label">días racha</string>
+    <string name="stat_completed_label">completados</string>
+    <string name="stat_avg_label">promedio</string>
+    <string name="chart_duration_title">Duración de tus últimos ayunos</string>
+
+    <!-- Selector de tema -->
+    <string name="theme_dialog_title">Apariencia</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_system">Seguir sistema</string>
+
+    <!-- Copia de seguridad -->
+    <string name="backup_dialog_title">Copia de seguridad</string>
+    <string name="backup_dialog_desc">Guarda tu historial, peso e hidratación en un archivo, o restaura uno guardado antes. No se sube a ningún servidor: tú eliges dónde se queda.</string>
+    <string name="backup_export_btn">Exportar copia de seguridad</string>
+    <string name="backup_import_btn">Restaurar copia de seguridad</string>
+
+    <!-- Diálogo de ayuno completado -->
+    <string name="completed_title">🎉 ¡Ayuno completado!</string>
+    <string name="completed_duration_plan">Plan %1$s (%2$dh) completado</string>
+    <string name="completed_duration_goal">Objetivo de %1$dh completado</string>
+    <string name="completed_phases_title">Fases superadas</string>
+
+    <!-- Registro de peso -->
+    <string name="weight_title">Registro de peso</string>
+    <string name="weight_subtitle">Anota tu peso periódicamente para ver tu evolución junto a tus ayunos.</string>
+    <string name="weight_input_label">Peso (kg)</string>
+    <string name="weight_value">%1$.1f kg</string>
+    <string name="weight_empty">Todavía no has registrado ningún peso.</string>
+    <string name="cd_delete_entry">Eliminar registro</string>
+
+    <!-- Hidratación -->
+    <string name="hydration_title">Hidratación de hoy</string>
+    <string name="hydration_ml">%1$d ml</string>
+    <string name="hydration_hint">Cada toque añade 250 ml. El agua, café y las infusiones sin azúcar no rompen el ayuno.</string>
+    <string name="hydration_water">Agua</string>
+    <string name="hydration_coffee">Café</string>
+    <string name="hydration_tea">Infusión</string>
+
+    <!-- Racha -->
+    <string name="streak_strip_label">Últimos %1$d días</string>
+
+    <!-- Logros -->
+    <string name="achievements_title">Logros</string>
+    <string name="achievements_subtitle">%1$d de %2$d logros conseguidos</string>
+    <string name="cd_achievement_unlocked">Logro conseguido</string>
+
+    <string name="achievement_first_fast_title">Primer paso</string>
+    <string name="achievement_first_fast_desc">Completa tu primer ayuno.</string>
+    <string name="achievement_streak_3_title">En marcha</string>
+    <string name="achievement_streak_3_desc">Alcanza una racha de 3 días seguidos.</string>
+    <string name="achievement_streak_7_title">Una semana</string>
+    <string name="achievement_streak_7_desc">Alcanza una racha de 7 días seguidos.</string>
+    <string name="achievement_streak_30_title">Un mes de constancia</string>
+    <string name="achievement_streak_30_desc">Alcanza una racha de 30 días seguidos.</string>
+    <string name="achievement_streak_100_title">Imparable</string>
+    <string name="achievement_streak_100_desc">Alcanza una racha de 100 días seguidos.</string>
+    <string name="achievement_completed_10_title">Diez ayunos</string>
+    <string name="achievement_completed_10_desc">Completa 10 ayunos.</string>
+    <string name="achievement_completed_50_title">Cincuenta ayunos</string>
+    <string name="achievement_completed_50_desc">Completa 50 ayunos.</string>
+    <string name="achievement_deep_ketosis_title">Cetosis profunda</string>
+    <string name="achievement_deep_ketosis_desc">Completa un ayuno de al menos 24 horas.</string>
+    <string name="achievement_extended_ketosis_title">Cetosis extendida</string>
+    <string name="achievement_extended_ketosis_desc">Completa un ayuno de al menos 72 horas.</string>
+    <string name="achievement_plan_explorer_title">Explorador de planes</string>
+    <string name="achievement_plan_explorer_desc">Completa ayunos con 3 planes distintos.</string>
+
+    <!-- Compartir (imagen + texto) -->
+    <string name="share_app_name">AYUNO</string>
+    <string name="share_goal_completed">✓  Objetivo de %1$dh completado</string>
+    <string name="share_phases_completed_title">Fases completadas</string>
+    <string name="share_text_intro">Acabo de completar un ayuno de %1$dh %2$02dm 🌙</string>
+    <string name="share_text_cta">Mira mi último ayuno. Si quieres mejorar tu salud únete tú también 👇</string>
+
+    <!-- Notificaciones -->
+    <string name="notif_channel_name">Fases del ayuno</string>
+    <string name="notif_channel_desc">Notificaciones al entrar en cada nueva fase del ayuno</string>
+
+    <!-- Widget de pantalla de inicio -->
+    <string name="widget_no_active">Sin ayuno activo</string>
+    <string name="widget_time_placeholder">--:--</string>
+    <string name="widget_tap_to_open">Toca para abrir Ayuno</string>
+    <string name="widget_subtitle_format">%1$s · %2$d ml hoy</string>
+    <string name="widget_free_fast">Ayuno libre</string>
+    <string name="widget_btn_liquid">💧 Líquidos</string>
+    <string name="widget_btn_end">Finalizar</string>
+    <string name="widget_toast_liquid">+250 ml registrados</string>
+    <string name="widget_toast_end">Ayuno finalizado</string>
+
+    <!-- Frases motivacionales contextuales -->
+    <string name="motivation_almost_next_phase">Casi en «%1$s». Aguanta un poco más.</string>
+
+    <string name="motiv_postprandial_1">La disciplina empieza cuando terminas de comer.</string>
+    <string name="motiv_postprandial_2">El reloj ya corre a tu favor.</string>
+    <string name="motiv_postprandial_3">Aún digieres: el ayuno de verdad llega en unas horas.</string>
+    <string name="motiv_postprandial_4">Nada que hacer ahora salvo dejar pasar el tiempo.</string>
+
+    <string name="motiv_glycogen_1">Tu cuerpo ya tira de las reservas.</string>
+    <string name="motiv_glycogen_2">Cada hora que pasa quemas un poco más de glucógeno.</string>
+    <string name="motiv_glycogen_3">El hambre es una ola: sube y luego baja.</string>
+    <string name="motiv_glycogen_4">Bebe agua; buena parte del hambre es sed.</string>
+
+    <string name="motiv_early_ketosis_1">La incomodidad forja control y claridad.</string>
+    <string name="motiv_early_ketosis_2">Estás entrando en cetosis: la grasa es ahora tu combustible.</string>
+    <string name="motiv_early_ketosis_3">Lo difícil de hoy es la fuerza de mañana.</string>
+    <string name="motiv_early_ketosis_4">Ya has llegado más lejos que la mayoría.</string>
+
+    <string name="motiv_deep_ketosis_1">Cetosis plena: la mente se aclara y la grasa arde.</string>
+    <string name="motiv_deep_ketosis_2">La autofagia está limpiando tus células ahora mismo.</string>
+    <string name="motiv_deep_ketosis_3">A partir de aquí el hambre afloja. Sigue.</string>
+    <string name="motiv_deep_ketosis_4">Estás quemando grasa, no fuerza de voluntad.</string>
+
+    <string name="motiv_extended_ketosis_1">Tu cuerpo se renueva desde dentro.</string>
+    <string name="motiv_extended_ketosis_2">Máxima autofagia: territorio de élite.</string>
+    <string name="motiv_extended_ketosis_3">Escucha a tu cuerpo y para si algo no va bien.</string>
+    <string name="motiv_extended_ketosis_4">El hambre tiende a desaparecer a partir del tercer día.</string>
+
+    <string name="streak_first_fast">Tu primer ayuno empieza con un solo toque.</string>
+    <string name="streak_completed_multi">Racha de %1$d días asegurada hoy. 🔥</string>
+    <string name="streak_completed_today">Ayuno de hoy completado. Mañana, otra vez.</string>
+    <string name="streak_ongoing">Llevas %1$d días seguidos. No rompas la cadena hoy.</string>
+    <string name="streak_day_one">Ayer lo lograste. Encadena hoy el segundo día.</string>
 </resources>

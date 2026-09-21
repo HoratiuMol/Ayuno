@@ -52,7 +52,7 @@ class FastingStorage(context: Context) {
     fun endSession(): FastingSession? {
         val active = getActiveSession() ?: return null
         val elapsedHours = (System.currentTimeMillis() - active.startTime) / 3_600_000f
-        val phases = FASTING_PHASES.filter { it.startHour < elapsedHours }.map { it.name }
+        val phases = FASTING_PHASES.filter { it.startHour < elapsedHours }.map { it.id }
         val finished = active.copy(
             endTime          = System.currentTimeMillis(),
             completed        = true,
@@ -68,7 +68,7 @@ class FastingStorage(context: Context) {
     fun cancelSession() {
         val active = getActiveSession() ?: return
         val elapsedHours = (System.currentTimeMillis() - active.startTime) / 3_600_000f
-        val phases = FASTING_PHASES.filter { it.startHour < elapsedHours }.map { it.name }
+        val phases = FASTING_PHASES.filter { it.startHour < elapsedHours }.map { it.id }
         val cancelled = active.copy(
             endTime = System.currentTimeMillis(),
             completed = false,
@@ -100,9 +100,10 @@ class FastingStorage(context: Context) {
             val delayMs = phaseStartMs - now
             if (delayMs <= 0) return@forEachIndexed
 
-            val shortDesc = phase.description.substringBefore('.').take(120)
+            val phaseName = context.getString(phase.nameRes)
+            val shortDesc = context.getString(phase.descriptionRes).substringBefore('.').take(120)
             val data = workDataOf(
-                PhaseNotificationWorker.KEY_PHASE_NAME to phase.name,
+                PhaseNotificationWorker.KEY_PHASE_NAME to phaseName,
                 PhaseNotificationWorker.KEY_PHASE_DESC to shortDesc,
                 PhaseNotificationWorker.KEY_NOTIF_ID to (NOTIF_BASE_ID + index)
             )
@@ -153,8 +154,8 @@ class FastingStorage(context: Context) {
     )
 
     companion object {
-        private const val KEY_ACTIVE   = "active_session"
-        private const val KEY_HISTORY  = "fasting_history"
+        internal const val KEY_ACTIVE   = "active_session"
+        internal const val KEY_HISTORY  = "fasting_history"
         private const val NOTIF_BASE_ID = 1000
     }
 }

@@ -1,113 +1,122 @@
 package com.moldovan.ayuno.data
 
+import androidx.annotation.StringRes
+import com.moldovan.ayuno.R
+
 data class FastingPhase(
-    val name: String,
+    val id: String,
+    @StringRes val nameRes: Int,
     val startHour: Int,
     val endHour: Int,
-    val description: String,
-    val motivation: String,
-    val benefits: List<String>,
-    val cautions: List<String>,
-    val hungerLevel: String,
+    @StringRes val descriptionRes: Int,
+    @StringRes val motivationRes: Int,
+    val benefitsRes: List<Int>,
+    val cautionsRes: List<Int>,
+    @StringRes val hungerLevelRes: Int,
     val hungerEmoji: String
 )
 
 val FASTING_PHASES = listOf(
     FastingPhase(
-        name        = "Fase postprandial",
-        startHour   = 0,
-        endHour     = 6,
-        description = "Tu cuerpo está utilizando la energía de los alimentos que acabas de comer. El páncreas produce insulina para usar la glucosa y almacenar el exceso como glucógeno y grasa.",
-        motivation  = "La disciplina empieza cuando termina comer",
-        benefits    = listOf(
-            "Digestión activa y absorción de nutrientes",
-            "Almacenamiento de glucógeno hepático y muscular"
+        id             = "postprandial",
+        nameRes        = R.string.phase_postprandial_name,
+        startHour      = 0,
+        endHour        = 6,
+        descriptionRes = R.string.phase_postprandial_desc,
+        motivationRes  = R.string.phase_postprandial_motivation,
+        benefitsRes    = listOf(
+            R.string.phase_postprandial_benefit_1,
+            R.string.phase_postprandial_benefit_2
         ),
-        cautions    = listOf(
-            "No es recomendable hacer ejercicio intenso justo después de comer"
-        ),
-        hungerLevel = "Nulo",
-        hungerEmoji = "😌"
+        cautionsRes    = listOf(R.string.phase_postprandial_caution_1),
+        hungerLevelRes = R.string.hunger_none,
+        hungerEmoji    = "😌"
     ),
     FastingPhase(
-        name        = "Quema de reservas",
-        startHour   = 6,
-        endHour     = 16,
-        description = "Tu cuerpo comienza a usar las reservas de glucógeno. La glucosa almacenada en el hígado mantiene los niveles en sangre. Se activan la gluconeogénesis y la lipólisis.",
-        motivation  = "Tu cuerpo aprende a usar reservas",
-        benefits    = listOf(
-            "Se inicia la quema de grasa almacenada",
-            "Producción de cuerpos cetónicos para energía",
-            "Comienza la autofagia (renovación celular)",
-            "Aumento de sensibilidad a la insulina"
+        id             = "glycogen",
+        nameRes        = R.string.phase_glycogen_name,
+        startHour      = 6,
+        endHour        = 16,
+        descriptionRes = R.string.phase_glycogen_desc,
+        motivationRes  = R.string.phase_glycogen_motivation,
+        benefitsRes    = listOf(
+            R.string.phase_glycogen_benefit_1,
+            R.string.phase_glycogen_benefit_2,
+            R.string.phase_glycogen_benefit_3,
+            R.string.phase_glycogen_benefit_4
         ),
-        cautions    = listOf(
-            "Puedes sentir hambre o ligera irritabilidad",
-            "Mantente bien hidratado/a"
+        cautionsRes    = listOf(
+            R.string.phase_glycogen_caution_1,
+            R.string.phase_glycogen_caution_2
         ),
-        hungerLevel = "Creciente",
-        hungerEmoji = "😐"
+        hungerLevelRes = R.string.hunger_increasing,
+        hungerEmoji    = "😐"
     ),
     FastingPhase(
-        name        = "Cetosis temprana",
-        startHour   = 16,
-        endHour     = 24,
-        description = "La glucosa en las células y el glucógeno se agotan. Tu cuerpo quema grasa almacenada como fuente principal de energía. La autofagia se intensifica.",
-        motivation  = "La incomodidad forja control y claridad",
-        benefits    = listOf(
-            "Quema activa de grasa corporal",
-            "Autofagia más intensa: limpieza celular",
-            "Regulación del perfil lipídico",
-            "Mejora de la sensibilidad a la insulina"
+        id             = "early_ketosis",
+        nameRes        = R.string.phase_early_ketosis_name,
+        startHour      = 16,
+        endHour        = 24,
+        descriptionRes = R.string.phase_early_ketosis_desc,
+        motivationRes  = R.string.phase_early_ketosis_motivation,
+        benefitsRes    = listOf(
+            R.string.phase_early_ketosis_benefit_1,
+            R.string.phase_early_ketosis_benefit_2,
+            R.string.phase_early_ketosis_benefit_3,
+            R.string.phase_early_ketosis_benefit_4
         ),
-        cautions    = listOf(
-            "Posible dolor de cabeza si no estás hidratado",
-            "No recomendado sin experiencia previa en ayunos"
+        cautionsRes    = listOf(
+            R.string.phase_early_ketosis_caution_1,
+            R.string.phase_early_ketosis_caution_2
         ),
-        hungerLevel = "Alto",
-        hungerEmoji = "😣"
+        hungerLevelRes = R.string.hunger_high,
+        hungerEmoji    = "😣"
     ),
     FastingPhase(
-        name        = "Cetosis profunda",
-        startHour   = 24,
-        endHour     = 72,
-        description = "Tu cuerpo entra en cetosis plena: quema reservas de grasa para energía. Los cuerpos cetónicos actúan como combustible para el cerebro.",
-        motivation  = "Ahora quemas grasa, sigue adelante",
-        benefits    = listOf(
-            "Rendimiento cognitivo mejorado y claridad mental",
-            "Mayor sensación de energía y bienestar",
-            "Reducción de triglicéridos y colesterol LDL",
-            "Renovación celular profunda (autofagia)",
-            "Posible efecto preventivo contra el cáncer y el envejecimiento"
+        id             = "deep_ketosis",
+        nameRes        = R.string.phase_deep_ketosis_name,
+        startHour      = 24,
+        endHour        = 72,
+        descriptionRes = R.string.phase_deep_ketosis_desc,
+        motivationRes  = R.string.phase_deep_ketosis_motivation,
+        benefitsRes    = listOf(
+            R.string.phase_deep_ketosis_benefit_1,
+            R.string.phase_deep_ketosis_benefit_2,
+            R.string.phase_deep_ketosis_benefit_3,
+            R.string.phase_deep_ketosis_benefit_4,
+            R.string.phase_deep_ketosis_benefit_5
         ),
-        cautions    = listOf(
-            "Requiere supervisión médica",
-            "No apto para principiantes",
-            "Asegúrate de tomar agua, infusiones y electrolitos",
-            "Detener si aparecen mareos persistentes o debilidad"
+        cautionsRes    = listOf(
+            R.string.phase_deep_ketosis_caution_1,
+            R.string.phase_deep_ketosis_caution_2,
+            R.string.phase_deep_ketosis_caution_3,
+            R.string.phase_deep_ketosis_caution_4
         ),
-        hungerLevel = "Decreciente",
-        hungerEmoji = "🙂"
+        hungerLevelRes = R.string.hunger_decreasing,
+        hungerEmoji    = "🙂"
     ),
     FastingPhase(
-        name        = "Cetosis extendida",
-        startHour   = 72,
-        endHour     = 96,
-        description = "Estado profundo de cetosis. Todos los órganos usan cuerpos cetónicos y grasas. Las hormonas tiroideas pueden verse afectadas.",
-        motivation  = "Tu cuerpo se renueva desde dentro",
-        benefits    = listOf(
-            "Máxima autofagia y renovación celular",
-            "Mayor resistencia al estrés y toxinas",
-            "El hambre tiende a disminuir a partir del tercer día"
+        id             = "extended_ketosis",
+        nameRes        = R.string.phase_extended_ketosis_name,
+        startHour      = 72,
+        endHour        = 96,
+        descriptionRes = R.string.phase_extended_ketosis_desc,
+        motivationRes  = R.string.phase_extended_ketosis_motivation,
+        benefitsRes    = listOf(
+            R.string.phase_extended_ketosis_benefit_1,
+            R.string.phase_extended_ketosis_benefit_2,
+            R.string.phase_extended_ketosis_benefit_3
         ),
-        cautions    = listOf(
-            "⚠️ SOLO con supervisión médica estricta",
-            "Las hormonas tiroideas pueden alterarse",
-            "El metabolismo puede verse afectado negativamente",
-            "No apto para personas con TCA, embarazadas, niños o ancianos",
-            "Detener inmediatamente si hay desmayos o confusión"
+        cautionsRes    = listOf(
+            R.string.phase_extended_ketosis_caution_1,
+            R.string.phase_extended_ketosis_caution_2,
+            R.string.phase_extended_ketosis_caution_3,
+            R.string.phase_extended_ketosis_caution_4,
+            R.string.phase_extended_ketosis_caution_5
         ),
-        hungerLevel = "Bajo",
-        hungerEmoji = "😶"
+        hungerLevelRes = R.string.hunger_low,
+        hungerEmoji    = "😶"
     )
 )
+
+fun fastingPhaseById(id: String): FastingPhase? = FASTING_PHASES.firstOrNull { it.id == id }

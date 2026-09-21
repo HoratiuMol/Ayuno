@@ -23,6 +23,6 @@ class ThemePreference(context: Context) {
     }
 
     companion object {
-        private const val KEY_THEME = "theme_mode"
+        internal const val KEY_THEME = "theme_mode"
     }
 }

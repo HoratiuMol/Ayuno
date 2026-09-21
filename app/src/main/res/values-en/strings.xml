@@ -1,0 +1,356 @@
+<resources>
+    <string name="app_name">Ayuno</string>
+
+    <!-- Common actions -->
+    <string name="action_back">← Back</string>
+    <string name="action_close">Close</string>
+    <string name="action_save">Save</string>
+    <string name="action_share">Share</string>
+
+    <!-- Home screen -->
+    <string name="home_subtitle">Manage your intermittent fasting</string>
+    <string name="cd_weight_log">Weight log</string>
+    <string name="cd_change_theme">Change theme</string>
+    <string name="cd_backup">Backup</string>
+    <string name="btn_start_free_fast">Start a free fast</string>
+    <string name="btn_already_fasting">I\'ve already been fasting for a while</string>
+    <string name="btn_guide">Fasting guide</string>
+    <string name="btn_achievements">Achievements</string>
+    <string name="body_section_title">What\'s happening in your body right now</string>
+    <string name="share_chooser_title">Share fast</string>
+
+    <!-- Dialog: start an already-in-progress fast -->
+    <string name="start_dialog_title">When was your last meal?</string>
+    <string name="start_dialog_hours_ago">%1$.1f hours ago</string>
+    <string name="start_dialog_min_label">0.5h</string>
+    <string name="start_dialog_max_label">23h</string>
+    <string name="start_dialog_current_phase">📍 Current phase: %1$s</string>
+    <string name="start_dialog_next_phase_in">⏭ Next phase in %1$.1fh</string>
+    <string name="start_dialog_confirm">Start fast</string>
+
+    <!-- Medical disclaimer -->
+    <string name="medical_disclaimer">Remember to consult your doctor for long-term fasts and follow their advice and guidance. This app is only a fasting tracker, not medical advice. Fasting can affect each person differently depending on their physiology and medical or metabolic needs.</string>
+
+    <!-- Active fast -->
+    <string name="btn_i_ate">I ate</string>
+    <string name="action_cancel_fast">Cancel</string>
+
+    <!-- Daily quotes -->
+    <string name="quote_1_text">Fasting is the doorway to clarity.</string>
+    <string name="quote_1_author">Proverb</string>
+    <string name="quote_2_text">Your body is a temple; care for it wisely.</string>
+    <string name="quote_2_author">Hippocrates</string>
+    <string name="quote_3_text">Discipline is the bridge between goals and accomplishment.</string>
+    <string name="quote_3_author">Jim Rohn</string>
+    <string name="quote_4_text">Eating is a necessity, but eating intelligently is an art.</string>
+    <string name="quote_4_author">La Rochefoucauld</string>
+    <string name="quote_5_text">Fasting of the body is food for the soul.</string>
+    <string name="quote_5_author">St. John Chrysostom</string>
+    <string name="quote_6_text">Simplicity is the ultimate sophistication.</string>
+    <string name="quote_6_author">Leonardo da Vinci</string>
+    <string name="quote_7_text">When the stomach rests, the mind awakens.</string>
+    <string name="quote_7_author">Arabic proverb</string>
+    <string name="quote_8_text">It\'s not what you eat, but what you digest, that makes you strong.</string>
+    <string name="quote_8_author">Proverb</string>
+    <string name="quote_9_text">Rest is as important as movement.</string>
+    <string name="quote_9_author">Popular wisdom</string>
+    <string name="quote_10_text">Less is more when it comes to feeding the body.</string>
+    <string name="quote_10_author">Paracelsus</string>
+    <string name="quote_11_text">Patience is bitter, but its fruit is sweet.</string>
+    <string name="quote_11_author">Aristotle</string>
+    <string name="quote_12_text">Take care of your body; it\'s the only place you have to live.</string>
+    <string name="quote_12_author">Jim Rohn</string>
+    <string name="quote_13_text">He who conquers others is strong; he who conquers himself is mighty.</string>
+    <string name="quote_13_author">Lao Tzu</string>
+    <string name="quote_14_text">Health is not valued until sickness comes.</string>
+    <string name="quote_14_author">Thomas Fuller</string>
+    <string name="quote_15_text">Every day is a new chance to take care of yourself.</string>
+    <string name="quote_15_author">Popular wisdom</string>
+
+    <!-- Fasting plans: entry and picker -->
+    <string name="plan_entry_title">Fasting plans</string>
+    <string name="plan_entry_subtitle">16:8, OMAD, 5:2... pick one and start instantly</string>
+    <string name="cd_view_plans">View fasting plans</string>
+    <string name="plan_picker_subtitle">Choose the intermittent fasting method that suits you best. Your fast will start as soon as you pick it.</string>
+
+    <!-- Active plan progress card -->
+    <string name="plan_progress_title">Plan %1$s</string>
+    <string name="plan_progress_fast_window">🌙 Fasting window · %1$dh</string>
+    <string name="plan_progress_eat_window">🍽 Eating window · %1$dh</string>
+    <string name="plan_progress_fast_remaining">%1$.1fh left until your %2$dh eating window opens.</string>
+    <string name="plan_progress_eat_open">✓ Fasting window complete — your %1$dh eating window is now open.</string>
+    <string name="plan_progress_full_day">Full fasting day · %1$dh</string>
+    <string name="plan_progress_full_day_remaining">%1$.1fh left to reach the goal for this fasting day.</string>
+    <string name="plan_progress_full_day_done">🎉 Fasting day goal completed.</string>
+
+    <!-- Difficulty -->
+    <string name="difficulty_beginner">Beginner</string>
+    <string name="difficulty_intermediate">Intermediate</string>
+    <string name="difficulty_advanced">Advanced</string>
+
+    <!-- Fasting plans: content -->
+    <string name="plan_12_12_name">12:12</string>
+    <string name="plan_12_12_subtitle">Getting started</string>
+    <string name="plan_12_12_desc">A gentle 12-hour fast, ideal for getting used to intermittent fasting with barely any effort.</string>
+    <string name="plan_12_12_schedule">E.g.: dinner at 8pm, breakfast at 8am</string>
+
+    <string name="plan_14_10_name">14:10</string>
+    <string name="plan_14_10_subtitle">Progression</string>
+    <string name="plan_14_10_desc">Slightly extends the fasting window while your body adapts to the method.</string>
+    <string name="plan_14_10_schedule">E.g.: dinner at 8pm, breakfast at 10am</string>
+
+    <string name="plan_16_8_name">16:8</string>
+    <string name="plan_16_8_subtitle">Leangains</string>
+    <string name="plan_16_8_desc">The most popular intermittent fasting method: 16 hours of fasting and an 8-hour eating window.</string>
+    <string name="plan_16_8_schedule">E.g.: dinner at 8pm, lunch at noon</string>
+
+    <string name="plan_18_6_name">18:6</string>
+    <string name="plan_18_6_subtitle">Narrower window</string>
+    <string name="plan_18_6_desc">Shrinks the eating window to 6 hours to deepen the metabolic benefits of fasting.</string>
+    <string name="plan_18_6_schedule">E.g.: dinner at 6pm, lunch at noon</string>
+
+    <string name="plan_20_4_name">20:4</string>
+    <string name="plan_20_4_subtitle">Warrior Diet</string>
+    <string name="plan_20_4_desc">A single 4-hour eating window per day; requires prior experience with shorter fasts.</string>
+    <string name="plan_20_4_schedule">E.g.: one main meal between 4pm and 8pm</string>
+
+    <string name="plan_omad_name">OMAD</string>
+    <string name="plan_omad_subtitle">One meal a day</string>
+    <string name="plan_omad_desc">One Meal A Day: 23 hours of fasting with a single daily meal. Maximum simplicity, requires experience.</string>
+    <string name="plan_omad_schedule">E.g.: a single meal at 6pm</string>
+
+    <string name="plan_adf_name">ADF</string>
+    <string name="plan_adf_subtitle">Alternate days</string>
+    <string name="plan_adf_desc">Alternate Day Fasting: full 24-hour fasts on alternating days, combined with normal eating days.</string>
+    <string name="plan_adf_schedule">E.g.: fast every other day</string>
+
+    <string name="plan_5_2_name">5:2</string>
+    <string name="plan_5_2_subtitle">Calorie restriction</string>
+    <string name="plan_5_2_desc">5 days of normal eating and 2 non-consecutive days with very reduced intake. Here, each restriction day is logged as a 24h fast.</string>
+    <string name="plan_5_2_schedule">E.g.: restrict on Mondays and Thursdays</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="cd_view_list">List view</string>
+    <string name="cd_view_calendar">Calendar view</string>
+    <string name="filter_all">All</string>
+    <string name="filter_min_hours">≥%1$dh</string>
+    <string name="filter_all_plans">All plans</string>
+    <string name="history_empty_filtered">No fasts match this filter.</string>
+    <string name="history_duration">Duration: %1$dh %2$02dm</string>
+    <string name="history_last_phase">Last phase: %1$s</string>
+    <string name="history_plan_label">Plan: %1$s</string>
+    <string name="history_completed_badge">✓ %1$dh</string>
+    <string name="history_cancelled_badge">Cancelled</string>
+
+    <!-- History calendar -->
+    <string name="cd_prev_month">Previous month</string>
+    <string name="cd_next_month">Next month</string>
+    <string name="weekday_mon">M</string>
+    <string name="weekday_tue">T</string>
+    <string name="weekday_wed">W</string>
+    <string name="weekday_thu">T</string>
+    <string name="weekday_fri">F</string>
+    <string name="weekday_sat">S</string>
+    <string name="weekday_sun">S</string>
+    <string name="legend_completed">Completed</string>
+
+    <!-- Fasting guide -->
+    <string name="guide_title">Fasting guide</string>
+    <string name="guide_subtitle">Learn what happens in your body during each phase of fasting, its benefits, and the precautions to keep in mind.</string>
+    <string name="guide_considerations_title">General considerations</string>
+    <string name="guide_tip_1">Always stay well hydrated: water, herbal tea and coffee are the only things allowed.</string>
+    <string name="guide_tip_2">Not recommended for children, pregnant women, the elderly, or people with eating disorders.</string>
+    <string name="guide_tip_3">Fasts longer than 24h require medical supervision.</string>
+    <string name="guide_tip_4">If you experience persistent dizziness, binge eating, extreme irritability, or a drop in performance, stop the fast.</string>
+    <string name="guide_tip_5">It\'s best to start gradually: 12/12, then 14/10, then 16/8.</string>
+
+    <string name="label_benefits">✦ Benefits</string>
+    <string name="label_cautions">⚠ Precautions</string>
+    <string name="label_hunger_level">Hunger level: %1$s</string>
+
+    <!-- Hunger levels -->
+    <string name="hunger_none">None</string>
+    <string name="hunger_increasing">Rising</string>
+    <string name="hunger_high">High</string>
+    <string name="hunger_decreasing">Falling</string>
+    <string name="hunger_low">Low</string>
+
+    <!-- Metabolic fasting phases -->
+    <string name="phase_postprandial_name">Postprandial phase</string>
+    <string name="phase_postprandial_desc">Your body is using the energy from the food you just ate. The pancreas produces insulin to use the glucose and store the excess as glycogen and fat.</string>
+    <string name="phase_postprandial_motivation">Discipline begins the moment you finish eating</string>
+    <string name="phase_postprandial_benefit_1">Active digestion and nutrient absorption</string>
+    <string name="phase_postprandial_benefit_2">Liver and muscle glycogen storage</string>
+    <string name="phase_postprandial_caution_1">Intense exercise right after eating isn\'t recommended</string>
+
+    <string name="phase_glycogen_name">Burning reserves</string>
+    <string name="phase_glycogen_desc">Your body starts using its glycogen reserves. Glucose stored in the liver keeps blood levels stable. Gluconeogenesis and lipolysis kick in.</string>
+    <string name="phase_glycogen_motivation">Your body is learning to use its reserves</string>
+    <string name="phase_glycogen_benefit_1">Stored fat burning begins</string>
+    <string name="phase_glycogen_benefit_2">Ketone body production for energy</string>
+    <string name="phase_glycogen_benefit_3">Autophagy begins (cellular renewal)</string>
+    <string name="phase_glycogen_benefit_4">Increased insulin sensitivity</string>
+    <string name="phase_glycogen_caution_1">You may feel hungry or slightly irritable</string>
+    <string name="phase_glycogen_caution_2">Stay well hydrated</string>
+
+    <string name="phase_early_ketosis_name">Early ketosis</string>
+    <string name="phase_early_ketosis_desc">Glucose in the cells and glycogen run out. Your body burns stored fat as its main energy source. Autophagy intensifies.</string>
+    <string name="phase_early_ketosis_motivation">Discomfort forges control and clarity</string>
+    <string name="phase_early_ketosis_benefit_1">Active body fat burning</string>
+    <string name="phase_early_ketosis_benefit_2">More intense autophagy: cellular cleanup</string>
+    <string name="phase_early_ketosis_benefit_3">Lipid profile regulation</string>
+    <string name="phase_early_ketosis_benefit_4">Improved insulin sensitivity</string>
+    <string name="phase_early_ketosis_caution_1">Possible headache if you\'re not hydrated</string>
+    <string name="phase_early_ketosis_caution_2">Not recommended without prior fasting experience</string>
+
+    <string name="phase_deep_ketosis_name">Deep ketosis</string>
+    <string name="phase_deep_ketosis_desc">Your body enters full ketosis: it burns fat reserves for energy. Ketone bodies act as fuel for the brain.</string>
+    <string name="phase_deep_ketosis_motivation">You\'re burning fat now, keep going</string>
+    <string name="phase_deep_ketosis_benefit_1">Improved cognitive performance and mental clarity</string>
+    <string name="phase_deep_ketosis_benefit_2">Greater sense of energy and well-being</string>
+    <string name="phase_deep_ketosis_benefit_3">Reduced triglycerides and LDL cholesterol</string>
+    <string name="phase_deep_ketosis_benefit_4">Deep cellular renewal (autophagy)</string>
+    <string name="phase_deep_ketosis_benefit_5">Possible protective effect against cancer and aging</string>
+    <string name="phase_deep_ketosis_caution_1">Requires medical supervision</string>
+    <string name="phase_deep_ketosis_caution_2">Not suitable for beginners</string>
+    <string name="phase_deep_ketosis_caution_3">Make sure to drink water, herbal teas and electrolytes</string>
+    <string name="phase_deep_ketosis_caution_4">Stop if persistent dizziness or weakness appears</string>
+
+    <string name="phase_extended_ketosis_name">Extended ketosis</string>
+    <string name="phase_extended_ketosis_desc">A deep state of ketosis. Every organ runs on ketone bodies and fats. Thyroid hormones may be affected.</string>
+    <string name="phase_extended_ketosis_motivation">Your body is renewing itself from within</string>
+    <string name="phase_extended_ketosis_benefit_1">Maximum autophagy and cellular renewal</string>
+    <string name="phase_extended_ketosis_benefit_2">Greater resistance to stress and toxins</string>
+    <string name="phase_extended_ketosis_benefit_3">Hunger tends to decrease from the third day onward</string>
+    <string name="phase_extended_ketosis_caution_1">⚠️ ONLY under strict medical supervision</string>
+    <string name="phase_extended_ketosis_caution_2">Thyroid hormones may become altered</string>
+    <string name="phase_extended_ketosis_caution_3">Metabolism may be negatively affected</string>
+    <string name="phase_extended_ketosis_caution_4">Not suitable for people with eating disorders, pregnant women, children or the elderly</string>
+    <string name="phase_extended_ketosis_caution_5">Stop immediately if fainting or confusion occurs</string>
+
+    <!-- Stats -->
+    <string name="stat_streak_label">day streak</string>
+    <string name="stat_completed_label">completed</string>
+    <string name="stat_avg_label">average</string>
+    <string name="chart_duration_title">Duration of your recent fasts</string>
+
+    <!-- Theme picker -->
+    <string name="theme_dialog_title">Appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">Follow system</string>
+
+    <!-- Backup -->
+    <string name="backup_dialog_title">Backup</string>
+    <string name="backup_dialog_desc">Save your history, weight and hydration to a file, or restore one you saved before. Nothing is uploaded to any server: you choose where it stays.</string>
+    <string name="backup_export_btn">Export backup</string>
+    <string name="backup_import_btn">Restore backup</string>
+
+    <!-- Fast completed dialog -->
+    <string name="completed_title">🎉 Fast completed!</string>
+    <string name="completed_duration_plan">Plan %1$s (%2$dh) completed</string>
+    <string name="completed_duration_goal">%1$dh goal completed</string>
+    <string name="completed_phases_title">Phases reached</string>
+
+    <!-- Weight log -->
+    <string name="weight_title">Weight log</string>
+    <string name="weight_subtitle">Log your weight regularly to see your progress alongside your fasts.</string>
+    <string name="weight_input_label">Weight (kg)</string>
+    <string name="weight_value">%1$.1f kg</string>
+    <string name="weight_empty">You haven\'t logged any weight yet.</string>
+    <string name="cd_delete_entry">Delete entry</string>
+
+    <!-- Hydration -->
+    <string name="hydration_title">Today\'s hydration</string>
+    <string name="hydration_ml">%1$d ml</string>
+    <string name="hydration_hint">Each tap adds 250 ml. Water, coffee and unsweetened herbal teas don\'t break your fast.</string>
+    <string name="hydration_water">Water</string>
+    <string name="hydration_coffee">Coffee</string>
+    <string name="hydration_tea">Herbal tea</string>
+
+    <!-- Streak -->
+    <string name="streak_strip_label">Last %1$d days</string>
+
+    <!-- Achievements -->
+    <string name="achievements_title">Achievements</string>
+    <string name="achievements_subtitle">%1$d of %2$d achievements unlocked</string>
+    <string name="cd_achievement_unlocked">Achievement unlocked</string>
+
+    <string name="achievement_first_fast_title">First step</string>
+    <string name="achievement_first_fast_desc">Complete your first fast.</string>
+    <string name="achievement_streak_3_title">Getting going</string>
+    <string name="achievement_streak_3_desc">Reach a 3-day streak.</string>
+    <string name="achievement_streak_7_title">One week</string>
+    <string name="achievement_streak_7_desc">Reach a 7-day streak.</string>
+    <string name="achievement_streak_30_title">A month of consistency</string>
+    <string name="achievement_streak_30_desc">Reach a 30-day streak.</string>
+    <string name="achievement_streak_100_title">Unstoppable</string>
+    <string name="achievement_streak_100_desc">Reach a 100-day streak.</string>
+    <string name="achievement_completed_10_title">Ten fasts</string>
+    <string name="achievement_completed_10_desc">Complete 10 fasts.</string>
+    <string name="achievement_completed_50_title">Fifty fasts</string>
+    <string name="achievement_completed_50_desc">Complete 50 fasts.</string>
+    <string name="achievement_deep_ketosis_title">Deep ketosis</string>
+    <string name="achievement_deep_ketosis_desc">Complete a fast of at least 24 hours.</string>
+    <string name="achievement_extended_ketosis_title">Extended ketosis</string>
+    <string name="achievement_extended_ketosis_desc">Complete a fast of at least 72 hours.</string>
+    <string name="achievement_plan_explorer_title">Plan explorer</string>
+    <string name="achievement_plan_explorer_desc">Complete fasts using 3 different plans.</string>
+
+    <!-- Share (image + text) -->
+    <string name="share_app_name">AYUNO</string>
+    <string name="share_goal_completed">✓  %1$dh goal completed</string>
+    <string name="share_phases_completed_title">Phases completed</string>
+    <string name="share_text_intro">I just completed a %1$dh %2$02dm fast 🌙</string>
+    <string name="share_text_cta">Check out my latest fast. If you want to improve your health, join in too 👇</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Fasting phases</string>
+    <string name="notif_channel_desc">Notifications when entering each new fasting phase</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_no_active">No active fast</string>
+    <string name="widget_time_placeholder">--:--</string>
+    <string name="widget_tap_to_open">Tap to open Ayuno</string>
+    <string name="widget_subtitle_format">%1$s · %2$d ml today</string>
+    <string name="widget_free_fast">Free fast</string>
+    <string name="widget_btn_liquid">💧 Liquids</string>
+    <string name="widget_btn_end">Finish</string>
+    <string name="widget_toast_liquid">+250 ml logged</string>
+    <string name="widget_toast_end">Fast finished</string>
+
+    <!-- Contextual motivational messages -->
+    <string name="motivation_almost_next_phase">Almost at «%1$s». Hang in there a bit longer.</string>
+
+    <string name="motiv_postprandial_1">Discipline begins the moment you finish eating.</string>
+    <string name="motiv_postprandial_2">The clock is already working in your favor.</string>
+    <string name="motiv_postprandial_3">You\'re still digesting: the real fast kicks in in a few hours.</string>
+    <string name="motiv_postprandial_4">Nothing to do now but let time pass.</string>
+
+    <string name="motiv_glycogen_1">Your body is already tapping into its reserves.</string>
+    <string name="motiv_glycogen_2">Every passing hour burns a little more glycogen.</string>
+    <string name="motiv_glycogen_3">Hunger is a wave: it rises, then it falls.</string>
+    <string name="motiv_glycogen_4">Drink water; a good part of hunger is actually thirst.</string>
+
+    <string name="motiv_early_ketosis_1">Discomfort forges control and clarity.</string>
+    <string name="motiv_early_ketosis_2">You\'re entering ketosis: fat is now your fuel.</string>
+    <string name="motiv_early_ketosis_3">Today\'s hard part is tomorrow\'s strength.</string>
+    <string name="motiv_early_ketosis_4">You\'ve already come further than most.</string>
+
+    <string name="motiv_deep_ketosis_1">Full ketosis: the mind clears and fat burns.</string>
+    <string name="motiv_deep_ketosis_2">Autophagy is cleaning up your cells right now.</string>
+    <string name="motiv_deep_ketosis_3">From here on, hunger eases up. Keep going.</string>
+    <string name="motiv_deep_ketosis_4">You\'re burning fat, not willpower.</string>
+
+    <string name="motiv_extended_ketosis_1">Your body is renewing itself from within.</string>
+    <string name="motiv_extended_ketosis_2">Maximum autophagy: elite territory.</string>
+    <string name="motiv_extended_ketosis_3">Listen to your body and stop if something feels wrong.</string>
+    <string name="motiv_extended_ketosis_4">Hunger tends to disappear from the third day onward.</string>
+
+    <string name="streak_first_fast">Your first fast starts with a single tap.</string>
+    <string name="streak_completed_multi">%1$d-day streak locked in today. 🔥</string>
+    <string name="streak_completed_today">Today\'s fast completed. Tomorrow, do it again.</string>
+    <string name="streak_ongoing">You\'re on a %1$d-day streak. Don\'t break the chain today.</string>
+    <string name="streak_day_one">You did it yesterday. Chain up day two today.</string>
+</resources>

@@ -1,9 +1,12 @@
 package com.moldovan.ayuno.data
 
+import androidx.annotation.StringRes
+import com.moldovan.ayuno.R
+
 data class Achievement(
     val id: String,
-    val title: String,
-    val description: String,
+    @StringRes val titleRes: Int,
+    @StringRes val descriptionRes: Int,
     val emoji: String
 )
 
@@ -13,16 +16,16 @@ data class AchievementProgress(
 )
 
 private val ACHIEVEMENTS = listOf(
-    Achievement("first_fast", "Primer paso", "Completa tu primer ayuno.", "🌱"),
-    Achievement("streak_3", "En marcha", "Alcanza una racha de 3 días seguidos.", "🔥"),
-    Achievement("streak_7", "Una semana", "Alcanza una racha de 7 días seguidos.", "🏅"),
-    Achievement("streak_30", "Un mes de constancia", "Alcanza una racha de 30 días seguidos.", "🏆"),
-    Achievement("streak_100", "Imparable", "Alcanza una racha de 100 días seguidos.", "💎"),
-    Achievement("completed_10", "Diez ayunos", "Completa 10 ayunos.", "🔟"),
-    Achievement("completed_50", "Cincuenta ayunos", "Completa 50 ayunos.", "🥇"),
-    Achievement("deep_ketosis", "Cetosis profunda", "Completa un ayuno de al menos 24 horas.", "🧠"),
-    Achievement("extended_ketosis", "Cetosis extendida", "Completa un ayuno de al menos 72 horas.", "🌌"),
-    Achievement("plan_explorer", "Explorador de planes", "Completa ayunos con 3 planes distintos.", "🧭")
+    Achievement("first_fast", R.string.achievement_first_fast_title, R.string.achievement_first_fast_desc, "🌱"),
+    Achievement("streak_3", R.string.achievement_streak_3_title, R.string.achievement_streak_3_desc, "🔥"),
+    Achievement("streak_7", R.string.achievement_streak_7_title, R.string.achievement_streak_7_desc, "🏅"),
+    Achievement("streak_30", R.string.achievement_streak_30_title, R.string.achievement_streak_30_desc, "🏆"),
+    Achievement("streak_100", R.string.achievement_streak_100_title, R.string.achievement_streak_100_desc, "💎"),
+    Achievement("completed_10", R.string.achievement_completed_10_title, R.string.achievement_completed_10_desc, "🔟"),
+    Achievement("completed_50", R.string.achievement_completed_50_title, R.string.achievement_completed_50_desc, "🥇"),
+    Achievement("deep_ketosis", R.string.achievement_deep_ketosis_title, R.string.achievement_deep_ketosis_desc, "🧠"),
+    Achievement("extended_ketosis", R.string.achievement_extended_ketosis_title, R.string.achievement_extended_ketosis_desc, "🌌"),
+    Achievement("plan_explorer", R.string.achievement_plan_explorer_title, R.string.achievement_plan_explorer_desc, "🧭")
 )
 
 /**

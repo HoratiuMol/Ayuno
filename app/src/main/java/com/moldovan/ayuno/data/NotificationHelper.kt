@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.moldovan.ayuno.MainActivity
+import com.moldovan.ayuno.R
 
 object NotificationHelper {
 
@@ -27,10 +28,10 @@ object NotificationHelper {
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Fases del ayuno",
+            context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Notificaciones al entrar en cada nueva fase del ayuno"
+            description = context.getString(R.string.notif_channel_desc)
         }
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)

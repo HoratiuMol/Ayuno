@@ -61,6 +61,6 @@ class WeightStorage(context: Context) {
     )
 
     companion object {
-        private const val KEY_WEIGHT = "weight_history"
+        internal const val KEY_WEIGHT = "weight_history"
     }
 }

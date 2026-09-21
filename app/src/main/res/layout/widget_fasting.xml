@@ -15,7 +15,7 @@
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.05"
-        android:text="SIN AYUNO ACTIVO" />
+        android:text="@string/widget_no_active" />
 
     <TextView
         android:id="@+id/widget_time"
@@ -25,7 +25,7 @@
         android:textColor="@color/widget_text"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:text="--:--" />
+        android:text="@string/widget_time_placeholder" />
 
     <ProgressBar
         android:id="@+id/widget_progress"
@@ -44,7 +44,7 @@
         android:layout_marginTop="8dp"
         android:textColor="@color/widget_text_muted"
         android:textSize="12sp"
-        android:text="Toca para abrir Ayuno" />
+        android:text="@string/widget_tap_to_open" />
 
     <LinearLayout
         android:id="@+id/widget_actions"
@@ -66,7 +66,7 @@
             android:textColor="@color/widget_text"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:text="💧 Líquidos" />
+            android:text="@string/widget_btn_liquid" />
 
         <TextView
             android:id="@+id/widget_btn_end"
@@ -81,7 +81,7 @@
             android:textColor="@color/widget_text"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:text="Finalizar" />
+            android:text="@string/widget_btn_end" />
 
     </LinearLayout>
 
