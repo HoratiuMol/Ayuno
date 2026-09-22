@@ -247,6 +247,25 @@
     <string name="backup_export_btn">Exportar copia de seguridad</string>
     <string name="backup_import_btn">Restaurar copia de seguridad</string>
 
+    <!-- Pantalla de ajustes -->
+    <string name="cd_settings">Ajustes</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_desc">Elige el idioma de la app</string>
+    <string name="settings_theme_title">Modo oscuro</string>
+    <string name="settings_theme_desc">Elige la apariencia de la app</string>
+    <string name="settings_backup_title">Copia de seguridad</string>
+    <string name="settings_backup_desc">Exporta o restaura tus datos</string>
+    <string name="settings_section_soon">Próximamente</string>
+    <string name="settings_soon_desc">Aquí aparecerán nuevas funciones a medida que se vayan añadiendo a la app.</string>
+
+    <!-- Selector de idioma -->
+    <string name="language_dialog_title">Idioma</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_english">English</string>
+    <string name="language_system">Seguir sistema</string>
+
     <!-- Diálogo de ayuno completado -->
     <string name="completed_title">🎉 ¡Ayuno completado!</string>
     <string name="completed_duration_plan">Plan %1$s (%2$dh) completado</string>

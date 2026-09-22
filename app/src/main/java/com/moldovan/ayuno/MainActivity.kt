@@ -43,8 +43,14 @@ import com.moldovan.ayuno.data.HydrationStorage
 import com.moldovan.ayuno.data.computeFastingStreak
 import com.moldovan.ayuno.data.hasCompletedFastToday
 import com.moldovan.ayuno.data.streakMotivation
+import com.moldovan.ayuno.data.AppLanguage
+import com.moldovan.ayuno.data.LanguagePreference
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(LanguagePreference.applyLanguage(newBase))
+    }
 
     private val notificationPermissionLauncher =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
@@ -106,11 +112,13 @@ fun AyunoApp(
     var showStartDialog by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
     var showBackupDialog by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
     //añadidos tras compartir
     var showCompletedDialog    by remember { mutableStateOf(false) }
     var lastCompletedSession   by remember { mutableStateOf<FastingSession?>(null) }
 
     val context = LocalContext.current
+    var currentLanguage by remember { mutableStateOf(LanguagePreference.getLanguage(context)) }
 
     val exportBackupLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -213,16 +221,10 @@ fun AyunoApp(
                             contentDescription = stringResource(R.string.cd_weight_log)
                         )
                     }
-                    IconButton(onClick = { showThemePicker = true }) {
+                    IconButton(onClick = { showSettings = true }) {
                         Icon(
-                            imageVector        = Icons.Default.Palette,
-                            contentDescription = stringResource(R.string.cd_change_theme)
-                        )
-                    }
-                    IconButton(onClick = { showBackupDialog = true }) {
-                        Icon(
-                            imageVector        = Icons.Default.SettingsBackupRestore,
-                            contentDescription = stringResource(R.string.cd_backup)
+                            imageVector        = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.cd_settings)
                         )
                     }
                 },
@@ -248,6 +250,20 @@ fun AyunoApp(
             )
 
             when {
+                showSettings -> {
+                    SettingsScreen(
+                        currentLanguage  = currentLanguage,
+                        onLanguageChange = { selected ->
+                            LanguagePreference.setLanguage(context, selected)
+                            currentLanguage = selected
+                            (context as? android.app.Activity)?.recreate()
+                        },
+                        onOpenTheme  = { showThemePicker = true },
+                        onOpenBackup = { showBackupDialog = true },
+                        onBack       = { showSettings = false }
+                    )
+                }
+
                 showKnowledge -> {
                     KnowledgeBaseScreen(onBack = { showKnowledge = false })
                 }

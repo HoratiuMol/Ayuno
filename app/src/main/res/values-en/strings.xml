@@ -247,6 +247,25 @@
     <string name="backup_export_btn">Export backup</string>
     <string name="backup_import_btn">Restore backup</string>
 
+    <!-- Settings screen -->
+    <string name="cd_settings">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_desc">Choose the app language</string>
+    <string name="settings_theme_title">Dark mode</string>
+    <string name="settings_theme_desc">Choose the app appearance</string>
+    <string name="settings_backup_title">Backup</string>
+    <string name="settings_backup_desc">Export or restore your data</string>
+    <string name="settings_section_soon">Coming soon</string>
+    <string name="settings_soon_desc">New features will show up here as they get added to the app.</string>
+
+    <!-- Language picker -->
+    <string name="language_dialog_title">Language</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_english">English</string>
+    <string name="language_system">Follow system</string>
+
     <!-- Fast completed dialog -->
     <string name="completed_title">🎉 Fast completed!</string>
     <string name="completed_duration_plan">Plan %1$s (%2$dh) completed</string>

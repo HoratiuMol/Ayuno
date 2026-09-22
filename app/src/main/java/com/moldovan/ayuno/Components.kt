@@ -101,6 +101,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.SettingsBackupRestore
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Construction
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1407,6 +1411,188 @@ private fun ThemeOption(
                 modifier           = Modifier.size(18.dp)
             )
         }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LanguagePickerDialog — selector de idioma
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun LanguagePickerDialog(
+    currentLanguage: com.moldovan.ayuno.data.AppLanguage,
+    onSelect: (com.moldovan.ayuno.data.AppLanguage) -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.language_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                ThemeOption(
+                    label    = stringResource(R.string.language_spanish),
+                    emoji    = "🇪🇸",
+                    selected = currentLanguage == com.moldovan.ayuno.data.AppLanguage.SPANISH,
+                    onClick  = { onSelect(com.moldovan.ayuno.data.AppLanguage.SPANISH) }
+                )
+                ThemeOption(
+                    label    = stringResource(R.string.language_english),
+                    emoji    = "🇬🇧",
+                    selected = currentLanguage == com.moldovan.ayuno.data.AppLanguage.ENGLISH,
+                    onClick  = { onSelect(com.moldovan.ayuno.data.AppLanguage.ENGLISH) }
+                )
+                ThemeOption(
+                    label    = stringResource(R.string.language_system),
+                    emoji    = "📱",
+                    selected = currentLanguage == com.moldovan.ayuno.data.AppLanguage.SYSTEM,
+                    onClick  = { onSelect(com.moldovan.ayuno.data.AppLanguage.SYSTEM) }
+                )
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_close))
+            }
+        }
+    )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SettingsScreen — pantalla de ajustes: idioma, tema, backup y futuras funciones
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun SettingsScreen(
+    currentLanguage: com.moldovan.ayuno.data.AppLanguage,
+    onLanguageChange: (com.moldovan.ayuno.data.AppLanguage) -> Unit,
+    onOpenTheme: () -> Unit,
+    onOpenBackup: () -> Unit,
+    onBack: () -> Unit
+) {
+    var showLanguagePicker by remember { mutableStateOf(false) }
+
+    if (showLanguagePicker) {
+        LanguagePickerDialog(
+            currentLanguage = currentLanguage,
+            onSelect  = { onLanguageChange(it); showLanguagePicker = false },
+            onDismiss = { showLanguagePicker = false }
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        TextButton(onClick = onBack) {
+            Text(stringResource(R.string.action_back))
+        }
+
+        Text(
+            text       = stringResource(R.string.settings_title),
+            style      = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text  = stringResource(R.string.settings_section_general),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Card(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
+            Column {
+                SettingsRow(
+                    icon        = Icons.Default.Language,
+                    title       = stringResource(R.string.settings_language_title),
+                    description = stringResource(R.string.settings_language_desc),
+                    onClick     = { showLanguagePicker = true }
+                )
+                HorizontalDivider()
+                SettingsRow(
+                    icon        = Icons.Default.Palette,
+                    title       = stringResource(R.string.settings_theme_title),
+                    description = stringResource(R.string.settings_theme_desc),
+                    onClick     = onOpenTheme
+                )
+                HorizontalDivider()
+                SettingsRow(
+                    icon        = Icons.Default.SettingsBackupRestore,
+                    title       = stringResource(R.string.settings_backup_title),
+                    description = stringResource(R.string.settings_backup_desc),
+                    onClick     = onOpenBackup
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text  = stringResource(R.string.settings_section_soon),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Card(
+            shape    = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth(),
+            colors   = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.Construction,
+                    contentDescription = null,
+                    tint     = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                )
+                Text(
+                    text  = stringResource(R.string.settings_soon_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Icon(
+            imageVector        = icon,
+            contentDescription = null,
+            tint               = MaterialTheme.colorScheme.primary
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text  = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector        = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint               = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
